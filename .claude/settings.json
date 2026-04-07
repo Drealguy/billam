@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --yes)",
+      "Bash(npx create-next-app@latest billam-app --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --yes)",
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npx shadcn@latest add input label card badge select textarea dialog dropdown-menu separator avatar table tabs --yes)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(shopt -s dotglob)",
+      "Bash(mv billam-app/* .)",
+      "Bash(mv billam-app/.git .)",
+      "Bash(git remote:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\DLLL\\Documents\\Billam\\billam-app\\app\\(dashboard)\\invoices",
+      "C:\\Users\\DLLL\\Documents\\Billam\\billam-app\\app\\i",
+      "C:\\Users\\DLLL\\Documents\\Billam\\billam-app"
+    ]
+  }
+}
