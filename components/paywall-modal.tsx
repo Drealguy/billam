@@ -34,7 +34,8 @@ export function PaywallModal({ onClose }: Props) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Could not start payment");
 
-      const { reference, email } = json;
+      const { reference, email, publicKey } = json;
+      if (!publicKey) throw new Error("Payment configuration missing. Contact support.");
 
       // 2. Load Paystack inline script
       await loadPaystackScript();
@@ -65,7 +66,7 @@ export function PaywallModal({ onClose }: Props) {
       };
 
       const handler = (window as any).PaystackPop.setup({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+        key: publicKey,
         email,
         amount: 300000,
         currency: "NGN",

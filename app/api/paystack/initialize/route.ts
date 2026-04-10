@@ -29,5 +29,6 @@ export async function POST() {
     access_code: data.data.access_code,
     reference: data.data.reference,
     email: user.email,
+    publicKey: process.env.PAYSTACK_PUBLIC_KEY ?? process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
   });
 }
