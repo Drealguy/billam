@@ -1,14 +1,25 @@
 -- ============================================================
 -- BILL AM — Database Schema
--- Run this in your Supabase SQL Editor
+-- Safe to re-run: drops existing objects before recreating
 -- ============================================================
 
--- Enable UUID extension (already enabled by default in Supabase)
+-- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
 -- ============================================================
+-- DROP existing objects (safe re-run)
+-- ============================================================
+drop trigger if exists invoices_updated_at on public.invoices;
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.set_updated_at();
+drop function if exists public.handle_new_user();
+drop table if exists public.invoices cascade;
+drop table if exists public.clients cascade;
+drop table if exists public.profiles cascade;
+
+-- ============================================================
 -- PROFILES
--- Extends auth.users — created automatically on signup via trigger
+-- Extends auth.users — auto-created on signup via trigger
 -- ============================================================
 create table public.profiles (
   id               uuid primary key references auth.users(id) on delete cascade,
@@ -18,7 +29,7 @@ create table public.profiles (
   phone            text not null default '',
   logo_url         text,
   brand_colour     text not null default '#111827',
-  accent_colour    text not null default '#6366f1',
+  accent_colour    text not null default '#c8e52d',
   bank_name        text not null default '',
   account_number   text not null default '',
   account_name     text not null default '',
@@ -26,7 +37,6 @@ create table public.profiles (
   created_at       timestamptz not null default now()
 );
 
--- RLS
 alter table public.profiles enable row level security;
 
 create policy "Users can view own profile"
@@ -48,16 +58,10 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, business_name, business_tagline, phone, bank_name, account_number, account_name)
+  insert into public.profiles (id, full_name)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'full_name', ''),
-    coalesce(new.raw_user_meta_data->>'business_name', ''),
-    coalesce(new.raw_user_meta_data->>'business_tagline', ''),
-    coalesce(new.raw_user_meta_data->>'phone', ''),
-    coalesce(new.raw_user_meta_data->>'bank_name', ''),
-    coalesce(new.raw_user_meta_data->>'account_number', ''),
-    coalesce(new.raw_user_meta_data->>'account_name', '')
+    coalesce(new.raw_user_meta_data->>'full_name', '')
   );
   return new;
 end;
@@ -97,8 +101,8 @@ create table public.invoices (
   user_id          uuid not null references public.profiles(id) on delete cascade,
   invoice_number   text not null,
   client_id        uuid references public.clients(id) on delete set null,
-  client_snapshot  jsonb not null default '{}',  -- client data frozen at creation time
-  line_items       jsonb not null default '[]',  -- [{description, quantity, unit_price, total}]
+  client_snapshot  jsonb not null default '{}',
+  line_items       jsonb not null default '[]',
   currency         text not null default 'NGN',
   subtotal         numeric(12,2) not null default 0,
   vat_enabled      boolean not null default false,
@@ -145,6 +149,12 @@ insert into storage.buckets (id, name, public)
 values ('logos', 'logos', true)
 on conflict (id) do nothing;
 
+-- Drop old storage policies if they exist
+drop policy if exists "Users can upload own logo" on storage.objects;
+drop policy if exists "Users can update own logo" on storage.objects;
+drop policy if exists "Users can delete own logo" on storage.objects;
+drop policy if exists "Public logo read access" on storage.objects;
+
 create policy "Users can upload own logo"
   on storage.objects for insert
   with check (bucket_id = 'logos' and auth.uid()::text = (storage.foldername(name))[1]);
@@ -160,3 +170,12 @@ create policy "Users can delete own logo"
 create policy "Public logo read access"
   on storage.objects for select
   using (bucket_id = 'logos');
+
+-- ============================================================
+-- BACKFILL: create profile rows for any existing auth users
+-- Run this if you already have users who signed up before the trigger
+-- ============================================================
+insert into public.profiles (id, full_name)
+select id, coalesce(raw_user_meta_data->>'full_name', '')
+from auth.users
+on conflict (id) do nothing;
