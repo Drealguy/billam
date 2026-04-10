@@ -27,6 +27,7 @@ interface SidebarProps {
   businessName: string;
   fullName: string;
   plan: "free" | "pro";
+  logoUrl: string;
   open: boolean;
   onClose: () => void;
 }
@@ -46,7 +47,7 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-export function Sidebar({ businessName, fullName, plan, open, onClose }: SidebarProps) {
+export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [showPaywall, setShowPaywall] = useState(false);
@@ -98,7 +99,15 @@ export function Sidebar({ businessName, fullName, plan, open, onClose }: Sidebar
         {/* User profile section */}
         <div className="px-4 py-5 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Initials name={businessName || fullName || "B A"} />
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="logo"
+                className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-border"
+              />
+            ) : (
+              <Initials name={businessName || fullName || "B A"} />
+            )}
             <div className="min-w-0">
               <p className="text-sm font-bold truncate leading-tight">
                 {businessName || fullName}

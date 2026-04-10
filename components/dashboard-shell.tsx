@@ -10,6 +10,7 @@ interface DashboardShellProps {
   businessName: string;
   fullName: string;
   plan: "free" | "pro";
+  logoUrl: string;
   children: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ export function DashboardShell({
   businessName,
   fullName,
   plan,
+  logoUrl,
   children,
 }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -28,6 +30,7 @@ export function DashboardShell({
         businessName={businessName}
         fullName={fullName}
         plan={plan}
+        logoUrl={logoUrl}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
