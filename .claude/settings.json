@@ -17,12 +17,14 @@
       "Bash(code /c/Users/DLLL/Documents/Billam)",
       "Bash(cmd /c \"code C:\\\\Users\\\\DLLL\\\\Documents\\\\Billam\")",
       "Bash(powershell -command \"code 'C:\\\\Users\\\\DLLL\\\\Documents\\\\Billam'\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(cmd /c start \"\" \"C:\\\\Users\\\\DLLL\\\\Documents\\\\Billam\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\DLLL\\Documents\\Billam\\billam-app\\app\\(dashboard)\\invoices",
       "C:\\Users\\DLLL\\Documents\\Billam\\billam-app\\app\\i",
-      "C:\\Users\\DLLL\\Documents\\Billam\\billam-app"
+      "C:\\Users\\DLLL\\Documents\\Billam\\billam-app",
+      "C:\\Users\\DLLL\\Documents\\Billam\\app\\(dashboard)\\invoices\\[id]"
     ]
   }
 }

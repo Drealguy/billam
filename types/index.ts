@@ -15,6 +15,7 @@ export interface Profile {
   account_number: string;
   account_name: string;
   default_currency: Currency;
+  plan: "free" | "pro";
   created_at: string;
 }
 

@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CURRENCY_SYMBOLS, type Invoice } from "@/types";
-import { FileText, Plus, ArrowRight, Trash2, Copy, Link2, Pencil } from "lucide-react";
+import { FileText, Plus, ArrowRight, Trash2, Copy, Link2, Pencil, Zap } from "lucide-react";
+import { FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
 import { createClient } from "@/lib/supabase";
 
 const FILTERS = ["All", "Unpaid", "Part Paid", "Paid"] as const;
@@ -35,9 +36,10 @@ function formatDate(d: string) {
 interface Props {
   invoices: Invoice[];
   defaultCurrency: string;
+  plan: "free" | "pro";
 }
 
-export function InvoicesList({ invoices, defaultCurrency }: Props) {
+export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("All");
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -90,8 +92,48 @@ export function InvoicesList({ invoices, defaultCurrency }: Props) {
     router.refresh();
   };
 
+  const usedCount = invoices.length;
+  const atLimit = plan === "free" && usedCount >= FREE_INVOICE_LIMIT;
+  const WA_LINK = `https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦3,000/year). Please assist me.")}`;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 md:px-8 space-y-6">
+
+      {/* Free plan usage banner */}
+      {plan === "free" && (
+        <div className={`flex items-center justify-between gap-4 px-4 py-3 rounded-xl border ${atLimit ? "bg-red-50 border-red-200" : "bg-primary/5 border-primary/20"}`}>
+          <div className="flex items-center gap-3 min-w-0">
+            <Zap size={16} className={atLimit ? "text-red-500 flex-shrink-0" : "text-primary flex-shrink-0"} />
+            <div className="min-w-0">
+              <p className={`text-sm font-bold ${atLimit ? "text-red-700" : "text-foreground"}`}>
+                {atLimit
+                  ? "You've reached your free invoice limit"
+                  : `${usedCount} of ${FREE_INVOICE_LIMIT} free invoices used`}
+              </p>
+              {!atLimit && (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 max-w-[120px] h-1.5 bg-border rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${(usedCount / FREE_INVOICE_LIMIT) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{FREE_INVOICE_LIMIT - usedCount} left</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <a
+            href={WA_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+          >
+            <Zap size={12} /> Upgrade — ₦3,000/yr
+          </a>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>

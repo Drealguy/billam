@@ -34,6 +34,7 @@ create table public.profiles (
   account_number   text not null default '',
   account_name     text not null default '',
   default_currency text not null default 'NGN',
+  plan             text not null default 'free' check (plan in ('free', 'pro')),
   created_at       timestamptz not null default now()
 );
 

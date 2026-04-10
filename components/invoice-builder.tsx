@@ -8,6 +8,7 @@ import type { Profile, Client, LineItem } from "@/types";
 import { CURRENCY_SYMBOLS, VAT_RATE } from "@/types";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { createClient } from "@/lib/supabase";
+import { PaywallModal, FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
 
 interface Props {
   profile: Profile;
@@ -15,6 +16,8 @@ interface Props {
   defaultInvoiceNumber: string;
   userId: string;
   preselectedClientId?: string;
+  invoiceCount: number;
+  plan: "free" | "pro";
 }
 
 type Section = "client" | "info" | "items" | "payment";
@@ -92,9 +95,10 @@ function Collapsible({
   );
 }
 
-export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId }: Props) {
+export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId, invoiceCount, plan }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const isLocked = plan === "free" && invoiceCount >= FREE_INVOICE_LIMIT;
   const [open, setOpen] = useState<Record<Section, boolean>>({
     client: true,
     info: true,
@@ -256,6 +260,9 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Paywall */}
+      {isLocked && <PaywallModal />}
+
       {/* Top bar */}
       <div className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between gap-4">
