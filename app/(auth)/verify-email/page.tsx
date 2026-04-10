@@ -1,17 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, RefreshCw, CheckCircle, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function VerifyEmailPage() {
+  const router = useRouter();
   const [resent, setResent] = useState(false);
   const [resending, setResending] = useState(false);
 
+  // Auto-redirect as soon as email is confirmed (even in another tab)
+  useEffect(() => {
+    const supabase = createClient();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session) {
+        router.replace("/dashboard");
+      }
+    });
+
+    // Also check immediately in case they already verified
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace("/dashboard");
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
   const handleResend = async () => {
     setResending(true);
-    // Get the email from sessionStorage if we stored it, otherwise prompt
     const email = sessionStorage.getItem("pendingEmail");
     if (email) {
       const supabase = createClient();
@@ -31,14 +50,13 @@ export default function VerifyEmailPage() {
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
             <Mail size={36} className="text-primary" strokeWidth={1.6} />
           </div>
-          {/* Pulse ring */}
           <span className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping opacity-30" />
         </div>
         <div className="text-center space-y-1.5">
           <h1 className="text-2xl font-black">Check your inbox</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             We sent a confirmation link to your email.<br />
-            Click it to activate your Bill Am account.
+            Click it and you&apos;ll land on your dashboard automatically.
           </p>
         </div>
       </div>
@@ -48,7 +66,7 @@ export default function VerifyEmailPage() {
         {[
           { step: "1", text: "Open the email from Bill Am" },
           { step: "2", text: "Click the confirmation link" },
-          { step: "3", text: "You'll land on your dashboard" },
+          { step: "3", text: "You'll be taken straight to your dashboard" },
         ].map(({ step, text }) => (
           <div key={step} className="flex items-center gap-3">
             <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-black flex items-center justify-center flex-shrink-0">
@@ -63,7 +81,7 @@ export default function VerifyEmailPage() {
       <div className="flex items-start gap-2.5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
         <span className="text-base leading-none mt-0.5">📬</span>
         <p className="text-xs text-amber-800 leading-relaxed">
-          <span className="font-semibold">Can't find it?</span> Check your spam or junk folder — sometimes it lands there. The link expires in <span className="font-semibold">24 hours</span>.
+          <span className="font-semibold">Can&apos;t find it?</span> Check your spam or junk folder. The link expires in <span className="font-semibold">24 hours</span>.
         </p>
       </div>
 
