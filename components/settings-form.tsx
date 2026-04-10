@@ -90,8 +90,7 @@ export function SettingsForm({ profile, userId }: Props) {
 
     const { error: err } = await supabase
       .from("profiles")
-      .upsert({
-        id: userId,
+      .update({
         full_name: fullName,
         business_name: businessName,
         business_tagline: tagline,
@@ -103,7 +102,8 @@ export function SettingsForm({ profile, userId }: Props) {
         bank_name: bankName,
         account_number: accountNumber,
         account_name: accountName,
-      });
+      })
+      .eq("id", userId);
 
     setSaving(false);
     if (err) { setError(err.message); return; }
