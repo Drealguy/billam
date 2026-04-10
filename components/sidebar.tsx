@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import {
   Menu,
   Zap,
 } from "lucide-react";
+import { PaywallModal } from "@/components/paywall-modal";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -47,6 +49,7 @@ function Initials({ name }: { name: string }) {
 export function Sidebar({ businessName, fullName, plan, open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleLogout = async () => {
     const { createClient } = await import("@/lib/supabase");
@@ -147,20 +150,19 @@ export function Sidebar({ businessName, fullName, plan, open, onClose }: Sidebar
 
         {/* Upgrade CTA for free users */}
         {plan === "free" && (
-          <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
-            <p className="text-xs font-bold text-foreground">Upgrade to Pro</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">₦3,000/year — unlimited invoices</p>
-            <button
-              onClick={() => {
-                // trigger paywall modal by navigating to new invoice
-                // which will show the paywall if limit reached, or show inline
-                window.location.href = "/invoices/new";
-              }}
-              className="mt-2 flex items-center gap-1.5 w-full justify-center py-1.5 text-[11px] font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
-            >
-              <Zap size={11} /> Upgrade now
-            </button>
-          </div>
+          <>
+            {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
+            <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+              <p className="text-xs font-bold text-foreground">Upgrade to Pro</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">₦3,000/year — unlimited invoices</p>
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="mt-2 flex items-center gap-1.5 w-full justify-center py-1.5 text-[11px] font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+              >
+                <Zap size={11} /> Upgrade now
+              </button>
+            </div>
+          </>
         )}
 
         {/* Logout */}
