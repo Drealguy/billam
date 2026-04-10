@@ -263,7 +263,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Paywall */}
-      {isLocked && <PaywallModal />}
+      {isLocked && <PaywallModal onClose={() => router.push("/invoices")} />}
 
       {/* Top bar */}
       <div className="sticky top-0 z-30 bg-background border-b border-border">
@@ -283,7 +283,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
             </span>
             <button
               type="button"
-              onClick={() => {}}
+              onClick={() => alert("Save the invoice first — PDF is available from the invoice detail page.")}
               className="px-4 py-1.5 text-xs font-semibold border border-border rounded-md hover:bg-secondary transition-colors flex items-center gap-1.5"
             >
               ⬆ PDF

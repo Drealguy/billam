@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CURRENCY_SYMBOLS, type Invoice } from "@/types";
 import { FileText, Plus, ArrowRight, Trash2, Link2, Pencil, Zap, Loader2, Copy as CopyIcon } from "lucide-react";
-import { FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
+import { PaywallModal, FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
 import { createClient } from "@/lib/supabase";
 
 const FILTERS = ["All", "Unpaid", "Part Paid", "Paid"] as const;
@@ -45,6 +45,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const filtered = filter === "All"
     ? invoices
@@ -97,10 +98,12 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
 
   const usedCount = invoices.length;
   const atLimit = plan === "free" && usedCount >= FREE_INVOICE_LIMIT;
-  const WA_LINK = `https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦3,000/year). Please assist me.")}`;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 md:px-8 space-y-6">
+
+      {/* Paywall modal */}
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
 
       {/* Free plan usage banner */}
       {plan === "free" && (
@@ -126,14 +129,12 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
               )}
             </div>
           </div>
-          <a
-            href={WA_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowPaywall(true)}
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
           >
             <Zap size={12} /> Upgrade — ₦3,000/yr
-          </a>
+          </button>
         </div>
       )}
 

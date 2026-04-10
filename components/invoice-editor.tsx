@@ -259,15 +259,18 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
               <Field label="Due Date">
                 <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
               </Field>
-              <Field label="Currency">
-                <Select value={currency} onChange={e => setCurrency(e.target.value as "NGN"|"USD"|"GBP"|"EUR")}>
-                  <option value="NGN">NGN ₦</option>
-                  <option value="USD">USD $</option>
-                  <option value="GBP">GBP £</option>
-                  <option value="EUR">EUR €</option>
-                </Select>
+              <Field label="Project Title">
+                <Input placeholder="e.g. Website Redesign" value={projectTitle} onChange={e => setProjectTitle(e.target.value)} />
               </Field>
             </div>
+            <Field label="Currency">
+              <Select value={currency} onChange={e => setCurrency(e.target.value as "NGN"|"USD"|"GBP"|"EUR")}>
+                <option value="NGN">NGN ₦</option>
+                <option value="USD">USD $</option>
+                <option value="GBP">GBP £</option>
+                <option value="EUR">EUR €</option>
+              </Select>
+            </Field>
           </Collapsible>
 
           {/* Line Items */}
@@ -290,6 +293,9 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
                   </div>
                   <Field label="Description">
                     <Input placeholder="e.g. Logo Design" value={item.description} onChange={e => updateItem(i, "description", e.target.value)} />
+                  </Field>
+                  <Field label="Details (optional)">
+                    <Input placeholder="Short description..." value={item.details} onChange={e => updateItem(i, "details", e.target.value)} />
                   </Field>
                   <div className="grid grid-cols-2 gap-2">
                     <Field label="Quantity">
