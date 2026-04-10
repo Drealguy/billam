@@ -42,14 +42,14 @@ function MockInvoice() {
   return (
     <div className="w-full max-w-sm bg-white rounded-xl overflow-hidden shadow-2xl text-[11px] font-sans select-none">
       {/* header */}
-      <div className="bg-[#0e2310] px-5 py-4 flex justify-between items-start">
+      <div className="bg-[#2B52FF] px-5 py-4 flex justify-between items-start">
         <div>
-          <div className="text-[#c8e52d] font-bold text-sm">Temi Adebayo Studio</div>
+          <div className="text-[#2B52FF] font-bold text-sm">Temi Adebayo Studio</div>
           <div className="text-white/40 text-[9px] uppercase tracking-widest mt-0.5">Creative Direction</div>
         </div>
         <div className="text-right">
           <div className="text-white font-bold text-lg leading-none">Invoice</div>
-          <div className="text-[#c8e52d] font-bold text-[10px] mt-1">No. INV-2026-014</div>
+          <div className="text-[#2B52FF] font-bold text-[10px] mt-1">No. INV-2026-014</div>
         </div>
       </div>
       {/* body */}
@@ -87,7 +87,7 @@ function MockInvoice() {
           <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 font-bold uppercase tracking-wide">Unpaid</span>
           <div className="text-right">
             <div className="text-[9px] text-gray-400 uppercase tracking-wider">Total Due</div>
-            <div className="text-base font-black text-[#0e2310]">₦650,000</div>
+            <div className="text-base font-black text-[#2B52FF]">₦650,000</div>
           </div>
         </div>
       </div>
@@ -354,8 +354,8 @@ export default function LandingPage() {
                 {/* template thumbnail placeholder */}
                 <div className="h-48 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
                   <div className="w-32 h-40 bg-white/90 rounded shadow-lg flex flex-col overflow-hidden">
-                    <div className="h-10 bg-[#0e2310] flex items-center px-2">
-                      <div className="w-12 h-1.5 bg-[#c8e52d] rounded" />
+                    <div className="h-10 bg-[#2B52FF] flex items-center px-2">
+                      <div className="w-12 h-1.5 bg-[#2B52FF] rounded" />
                     </div>
                     <div className="flex-1 p-2 space-y-1">
                       <div className="w-full h-1 bg-gray-200 rounded" />
@@ -365,7 +365,7 @@ export default function LandingPage() {
                       <div className="w-full h-1 bg-gray-100 rounded" />
                       <div className="w-2/3 h-1 bg-gray-100 rounded" />
                       <div className="mt-2 flex justify-end">
-                        <div className="w-12 h-2 bg-[#0e2310] rounded" />
+                        <div className="w-12 h-2 bg-[#2B52FF] rounded" />
                       </div>
                     </div>
                   </div>

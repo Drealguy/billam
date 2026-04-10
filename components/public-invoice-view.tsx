@@ -41,8 +41,8 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
   const items = invoice.line_items as LineItem[];
   const snap = invoice.client_snapshot as { name?: string; email?: string; phone?: string; address?: string };
   const status = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.unpaid;
-  const brand = profile?.brand_colour ?? "#0e2310";
-  const accent = profile?.accent_colour ?? "#c8e52d";
+  const brand = profile?.brand_colour ?? "#2B52FF";
+  const accent = profile?.accent_colour ?? "#2B52FF";
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(window.location.href.split("?")[0]);

@@ -54,8 +54,8 @@ export function SettingsForm({ profile, userId }: Props) {
   const [tagline, setTagline] = useState(profile?.business_tagline ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [currency, setCurrency] = useState(profile?.default_currency ?? "NGN");
-  const [brandColour, setBrandColour] = useState(profile?.brand_colour ?? "#0e2310");
-  const [accentColour, setAccentColour] = useState(profile?.accent_colour ?? "#c8e52d");
+  const [brandColour, setBrandColour] = useState(profile?.brand_colour ?? "#2B52FF");
+  const [accentColour, setAccentColour] = useState(profile?.accent_colour ?? "#2B52FF");
   const [logoUrl, setLogoUrl] = useState(profile?.logo_url ?? "");
   const [bankName, setBankName] = useState(profile?.bank_name ?? "");
   const [accountNumber, setAccountNumber] = useState(profile?.account_number ?? "");
@@ -196,7 +196,7 @@ export function SettingsForm({ profile, userId }: Props) {
               <Input
                 value={brandColour}
                 onChange={e => setBrandColour(e.target.value)}
-                placeholder="#0e2310"
+                placeholder="#2B52FF"
                 className="font-mono text-xs"
               />
             </div>
@@ -212,7 +212,7 @@ export function SettingsForm({ profile, userId }: Props) {
               <Input
                 value={accentColour}
                 onChange={e => setAccentColour(e.target.value)}
-                placeholder="#c8e52d"
+                placeholder="#2B52FF"
                 className="font-mono text-xs"
               />
             </div>

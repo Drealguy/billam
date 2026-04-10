@@ -74,7 +74,7 @@ export function InvoicePreview({ data }: { data: PreviewData }) {
   } = data;
 
   const brand = profile?.brand_colour ?? "#0c1a0c";
-  const accent = profile?.accent_colour ?? "#c8e52d";
+  const accent = profile?.accent_colour ?? "#2B52FF";
   const statusStyle = STATUS_STYLE[status] ?? STATUS_STYLE.unpaid;
 
   return (

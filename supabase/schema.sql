@@ -29,7 +29,7 @@ create table public.profiles (
   phone            text not null default '',
   logo_url         text,
   brand_colour     text not null default '#111827',
-  accent_colour    text not null default '#c8e52d',
+  accent_colour    text not null default '#2B52FF',
   bank_name        text not null default '',
   account_number   text not null default '',
   account_name     text not null default '',

@@ -44,7 +44,7 @@
   --color-lime-dark: var(--lime-dark);
 }
 
-/* BILL AM — white + lime */
+/* BILL AM — white + cobalt blue */
 :root {
   --background: #ffffff;
   --foreground: #111827;
@@ -52,22 +52,22 @@
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #c8e52d;
-  --primary-foreground: #1a2e05;
+  --primary: #2B52FF;
+  --primary-foreground: #ffffff;
   --secondary: #f3f4f6;
   --secondary-foreground: #111827;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
-  --accent: #c8e52d;
-  --accent-foreground: #1a2e05;
+  --accent: #2B52FF;
+  --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --border: #e5e7eb;
   --input: #f9fafb;
-  --ring: #c8e52d;
+  --ring: #2B52FF;
   --radius: 0.5rem;
 
-  --lime: #c8e52d;
-  --lime-dark: #a8c520;
+  --lime: #2B52FF;
+  --lime-dark: #1a3fd4;
 }
 
 @layer base {
