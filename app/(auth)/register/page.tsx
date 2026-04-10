@@ -45,11 +45,12 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setServerError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { full_name: data.full_name },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -58,8 +59,13 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    // If session is null, email confirmation is required
+    if (!authData.session) {
+      router.push("/verify-email");
+    } else {
+      router.push("/dashboard");
+      router.refresh();
+    }
   };
 
   return (

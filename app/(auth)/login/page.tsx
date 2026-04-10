@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { loginSchema, LoginFormData } from "@/lib/validations";
@@ -30,8 +30,10 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackError = searchParams.get("error");
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -77,17 +79,27 @@ export default function LoginPage() {
         </Field>
 
         <Field label="Password" error={errors.password?.message}>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            {...register("password")}
-          />
+          <div className="space-y-1">
+            <Input
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              {...register("password")}
+            />
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </div>
         </Field>
 
-        {serverError && (
+        {(serverError || callbackError) && (
           <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg">
-            {serverError}
+            {serverError ?? callbackError}
           </div>
         )}
 
@@ -108,5 +120,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
