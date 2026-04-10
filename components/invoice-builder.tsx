@@ -184,6 +184,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
       .filter((i) => i.description.trim())
       .map((i) => ({
         description: i.description,
+        details: i.details || undefined,
         quantity: i.quantity,
         unit_price: i.unit_price,
         total: i.quantity * i.unit_price,

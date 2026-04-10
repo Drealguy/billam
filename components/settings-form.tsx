@@ -80,6 +80,9 @@ export function SettingsForm({ profile, userId }: Props) {
 
     const { data: { publicUrl } } = supabase.storage.from("logos").getPublicUrl(path);
     setLogoUrl(publicUrl);
+
+    // Save URL to DB immediately — don't wait for Save button
+    await supabase.from("profiles").update({ logo_url: publicUrl }).eq("id", userId);
     setUploading(false);
   };
 

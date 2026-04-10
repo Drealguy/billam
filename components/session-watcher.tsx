@@ -29,17 +29,13 @@ export function SessionWatcher() {
       inactivityTimer = setTimeout(goToLogin, INACTIVITY_LIMIT);
     };
 
-    // Listen for Supabase token expiry / sign-out
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
-          if (event === "SIGNED_OUT") {
-            router.push("/login");
-            router.refresh();
-          }
-        }
+    // Listen for Supabase sign-out events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        router.push("/login");
+        router.refresh();
       }
-    );
+    });
 
     // Activity events that reset the inactivity timer
     const EVENTS = ["mousemove", "keydown", "mousedown", "touchstart", "scroll"];

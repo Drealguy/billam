@@ -145,6 +145,34 @@ create trigger invoices_updated_at
   for each row execute procedure public.set_updated_at();
 
 -- ============================================================
+-- PRO USERS — tracks all premium subscribers
+-- ============================================================
+drop table if exists public.pro_users cascade;
+
+create table public.pro_users (
+  id                  uuid primary key default uuid_generate_v4(),
+  user_id             uuid not null references public.profiles(id) on delete cascade,
+  email               text not null,
+  paystack_reference  text not null unique,
+  amount_paid         numeric(12,2) not null,
+  plan_started_at     timestamptz not null default now(),
+  plan_expires_at     timestamptz not null default (now() + interval '1 year'),
+  created_at          timestamptz not null default now()
+);
+
+alter table public.pro_users enable row level security;
+
+-- Users can only see their own record
+create policy "Users can view own pro status"
+  on public.pro_users for select
+  using (auth.uid() = user_id);
+
+-- Only server (service role) can insert — enforced via API route
+create policy "Service role can insert pro users"
+  on public.pro_users for insert
+  with check (true);
+
+-- ============================================================
 -- STORAGE — logos bucket
 -- ============================================================
 insert into storage.buckets (id, name, public)

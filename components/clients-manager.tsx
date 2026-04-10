@@ -156,9 +156,10 @@ export function ClientsManager({ clients: initial, userId }: Props) {
     if (!confirm("Delete this client? Their invoices will not be deleted.")) return;
     setDeletingId(id);
     const supabase = createClient();
-    await supabase.from("clients").delete().eq("id", id);
-    setClients(p => p.filter(c => c.id !== id));
+    const { error } = await supabase.from("clients").delete().eq("id", id);
     setDeletingId(null);
+    if (error) { alert("Error deleting client: " + error.message); return; }
+    setClients(p => p.filter(c => c.id !== id));
     router.refresh();
   };
 

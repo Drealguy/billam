@@ -82,7 +82,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
   const snap = invoice.client_snapshot as { name?: string; email?: string; phone?: string; address?: string };
   const existingItems = (invoice.line_items as LineItem[]).map(i => ({
     description: i.description,
-    details: "",
+    details: i.details ?? "",
     quantity: i.quantity,
     unit_price: i.unit_price,
   }));
@@ -145,6 +145,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
       .filter(i => i.description.trim())
       .map(i => ({
         description: i.description,
+        details: i.details || undefined,
         quantity: i.quantity,
         unit_price: i.unit_price,
         total: i.quantity * i.unit_price,

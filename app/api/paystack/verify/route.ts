@@ -20,18 +20,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment not verified" }, { status: 400 });
   }
 
-  // Make sure the amount is correct (₦3,000 = 300,000 kobo)
   if (data.data.amount < 300000) {
     return NextResponse.json({ error: "Incorrect amount" }, { status: 400 });
   }
 
-  // Upgrade plan
-  const { error } = await supabase
+  const amountPaid = data.data.amount / 100; // Convert kobo to naira
+
+  // Check if this reference was already used (prevent double-upgrade)
+  const { data: existing } = await supabase
+    .from("pro_users")
+    .select("id")
+    .eq("paystack_reference", reference)
+    .single();
+
+  if (existing) {
+    // Already processed — just ensure plan is set
+    await supabase.from("profiles").update({ plan: "pro" }).eq("id", user.id);
+    return NextResponse.json({ success: true });
+  }
+
+  // Record in pro_users table
+  const { error: proError } = await supabase.from("pro_users").insert({
+    user_id: user.id,
+    email: user.email,
+    paystack_reference: reference,
+    amount_paid: amountPaid,
+  });
+
+  if (proError) return NextResponse.json({ error: proError.message }, { status: 500 });
+
+  // Upgrade plan on profile
+  const { error: planError } = await supabase
     .from("profiles")
     .update({ plan: "pro" })
     .eq("id", user.id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (planError) return NextResponse.json({ error: planError.message }, { status: 500 });
 
   return NextResponse.json({ success: true });
 }
