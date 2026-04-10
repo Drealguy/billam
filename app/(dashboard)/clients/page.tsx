@@ -1,8 +1,25 @@
-export default function ClientsPage() {
+import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
+import { ClientsManager } from "@/components/clients-manager";
+import type { Client } from "@/types";
+
+export const dynamic = "force-dynamic";
+
+export default async function ClientsPage() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: clients } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("name");
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Clients</h1>
-      <p className="text-muted-foreground text-sm">Client address book — coming next.</p>
-    </div>
+    <ClientsManager
+      clients={(clients ?? []) as Client[]}
+      userId={user.id}
+    />
   );
 }

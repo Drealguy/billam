@@ -14,6 +14,7 @@ interface Props {
   clients: Client[];
   defaultInvoiceNumber: string;
   userId: string;
+  preselectedClientId?: string;
 }
 
 type Section = "client" | "info" | "items" | "payment";
@@ -91,7 +92,7 @@ function Collapsible({
   );
 }
 
-export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId }: Props) {
+export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState<Record<Section, boolean>>({
@@ -103,12 +104,15 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId 
 
   const toggle = (s: Section) => setOpen((p) => ({ ...p, [s]: !p[s] }));
 
+  // Pre-fill client if coming from clients page
+  const preselected = clients.find(c => c.id === preselectedClientId);
+
   // Client
-  const [clientId, setClientId] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
-  const [clientAddress, setClientAddress] = useState("");
+  const [clientId, setClientId] = useState(preselected?.id ?? "");
+  const [clientName, setClientName] = useState(preselected?.name ?? "");
+  const [clientEmail, setClientEmail] = useState(preselected?.email ?? "");
+  const [clientPhone, setClientPhone] = useState(preselected?.phone ?? "");
+  const [clientAddress, setClientAddress] = useState(preselected?.address ?? "");
 
   // Invoice info
   const [invoiceNumber, setInvoiceNumber] = useState(defaultInvoiceNumber);

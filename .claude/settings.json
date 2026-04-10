@@ -10,7 +10,14 @@
       "Bash(shopt -s dotglob)",
       "Bash(mv billam-app/* .)",
       "Bash(mv billam-app/.git .)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(code /c/Users/DLLL/Documents/Billam)",
+      "Bash(cmd /c \"code C:\\\\Users\\\\DLLL\\\\Documents\\\\Billam\")",
+      "Bash(powershell -command \"code 'C:\\\\Users\\\\DLLL\\\\Documents\\\\Billam'\")",
+      "Bash(git push:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\DLLL\\Documents\\Billam\\billam-app\\app\\(dashboard)\\invoices",

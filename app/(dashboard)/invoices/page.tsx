@@ -1,8 +1,28 @@
-export default function InvoicesPage() {
+import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
+import { InvoicesList } from "@/components/invoices-list";
+import type { Invoice, Profile } from "@/types";
+
+export const dynamic = "force-dynamic";
+
+export default async function InvoicesPage() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const [{ data: invoices }, { data: profile }] = await Promise.all([
+    supabase
+      .from("invoices")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("profiles").select("default_currency").eq("id", user.id).single(),
+  ]);
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Invoices</h1>
-      <p className="text-muted-foreground text-sm">Coming soon — invoice list with filters.</p>
-    </div>
+    <InvoicesList
+      invoices={(invoices ?? []) as Invoice[]}
+      defaultCurrency={(profile as Profile | null)?.default_currency ?? "NGN"}
+    />
   );
 }
