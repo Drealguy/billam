@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Zap, Loader2, MessageCircle } from "lucide-react";
+import { PaymentSuccessModal } from "@/components/payment-success-modal";
 
 const FREE_LIMIT = 5;
 const WA_LINK = `https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦3,000/year). Please assist me.")}`;
@@ -23,13 +24,13 @@ function loadPaystackScript(): Promise<void> {
 export function PaywallModal({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successEmail, setSuccessEmail] = useState<string | null>(null);
 
   const handlePay = async () => {
     setLoading(true);
     setError("");
 
     try {
-      // 1. Initialize transaction on the server
       const res = await fetch("/api/paystack/initialize", { method: "POST" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Could not start payment");
@@ -37,11 +38,9 @@ export function PaywallModal({ onClose }: Props) {
       const { reference, email, publicKey } = json;
       if (!publicKey) throw new Error("Payment configuration missing. Contact support.");
 
-      // 2. Load Paystack inline script
       await loadPaystackScript();
       setLoading(false);
 
-      // 3. Open Paystack popup
       const verifyAndUpgrade = (ref: string) => {
         setLoading(true);
         fetch("/api/paystack/verify", {
@@ -51,7 +50,8 @@ export function PaywallModal({ onClose }: Props) {
         })
           .then((vRes) => {
             if (vRes.ok) {
-              window.location.reload();
+              setLoading(false);
+              setSuccessEmail(email);
             } else {
               return vRes.json().then((vJson) => {
                 setLoading(false);
@@ -83,6 +83,16 @@ export function PaywallModal({ onClose }: Props) {
       setError(e.message ?? "Something went wrong. Try again.");
     }
   };
+
+  // Show success screen after payment
+  if (successEmail) {
+    return (
+      <PaymentSuccessModal
+        email={successEmail}
+        onDone={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
