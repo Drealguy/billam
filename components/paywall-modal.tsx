@@ -41,28 +41,38 @@ export function PaywallModal({ onClose }: Props) {
       setLoading(false);
 
       // 3. Open Paystack popup
+      const verifyAndUpgrade = (ref: string) => {
+        setLoading(true);
+        fetch("/api/paystack/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: ref }),
+        })
+          .then((vRes) => {
+            if (vRes.ok) {
+              window.location.reload();
+            } else {
+              return vRes.json().then((vJson) => {
+                setLoading(false);
+                setError(vJson.error ?? "Verification failed. Contact support.");
+              });
+            }
+          })
+          .catch(() => {
+            setLoading(false);
+            setError("Network error during verification. Contact support.");
+          });
+      };
+
       const handler = (window as any).PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         email,
-        amount: 300000, // ₦3,000 in kobo
+        amount: 300000,
         currency: "NGN",
         ref: reference,
-        onClose: () => {},
-        callback: async (response: { reference: string }) => {
-          setLoading(true);
-          // 4. Verify + upgrade on the server
-          const vRes = await fetch("/api/paystack/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reference: response.reference }),
-          });
-          if (vRes.ok) {
-            window.location.reload();
-          } else {
-            const vJson = await vRes.json();
-            setLoading(false);
-            setError(vJson.error ?? "Verification failed. Please contact support.");
-          }
+        onClose: function () {},
+        callback: function (response: { reference: string }) {
+          verifyAndUpgrade(response.reference);
         },
       });
 
