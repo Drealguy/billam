@@ -11,6 +11,7 @@ import {
   LogOut,
   X,
   Menu,
+  Zap,
 } from "lucide-react";
 
 const NAV = [
@@ -23,6 +24,7 @@ const NAV = [
 interface SidebarProps {
   businessName: string;
   fullName: string;
+  plan: "free" | "pro";
   open: boolean;
   onClose: () => void;
 }
@@ -42,7 +44,7 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-export function Sidebar({ businessName, fullName, open, onClose }: SidebarProps) {
+export function Sidebar({ businessName, fullName, plan, open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -103,6 +105,11 @@ export function Sidebar({ businessName, fullName, open, onClose }: SidebarProps)
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                 <span className="text-[10px] text-primary font-semibold">Active</span>
+                {plan === "free" && (
+                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-full leading-none">
+                    Free Trial
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -137,6 +144,22 @@ export function Sidebar({ businessName, fullName, open, onClose }: SidebarProps)
             );
           })}
         </nav>
+
+        {/* Upgrade CTA for free users */}
+        {plan === "free" && (
+          <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+            <p className="text-xs font-bold text-foreground">Upgrade to Pro</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">₦3,000/year — unlimited invoices</p>
+            <a
+              href={`https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦3,000/year). Please assist me.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 flex items-center gap-1.5 w-full justify-center py-1.5 text-[11px] font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Zap size={11} /> Upgrade now
+            </a>
+          </div>
+        )}
 
         {/* Logout */}
         <div className="px-3 py-4 border-t border-border flex-shrink-0">

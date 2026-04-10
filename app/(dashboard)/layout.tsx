@@ -18,7 +18,7 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, full_name")
+    .select("business_name, full_name, plan")
     .eq("id", user.id)
     .single();
 
@@ -26,6 +26,7 @@ export default async function DashboardLayout({
     <DashboardShell
       businessName={profile?.business_name ?? ""}
       fullName={profile?.full_name ?? user.email ?? ""}
+      plan={(profile?.plan as "free" | "pro") ?? "free"}
     >
       {children}
     </DashboardShell>

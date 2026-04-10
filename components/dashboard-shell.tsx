@@ -9,12 +9,14 @@ import { Plus } from "lucide-react";
 interface DashboardShellProps {
   businessName: string;
   fullName: string;
+  plan: "free" | "pro";
   children: React.ReactNode;
 }
 
 export function DashboardShell({
   businessName,
   fullName,
+  plan,
   children,
 }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,6 +27,7 @@ export function DashboardShell({
       <Sidebar
         businessName={businessName}
         fullName={fullName}
+        plan={plan}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

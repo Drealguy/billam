@@ -37,6 +37,7 @@ export default async function InvoiceDetailPage({
     <InvoiceDetailView
       invoice={invoice as Invoice}
       profile={profile as Profile}
+      plan={(profile as Profile | null)?.plan ?? "free"}
     />
   );
 }
