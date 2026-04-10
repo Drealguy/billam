@@ -14,7 +14,7 @@ export async function POST() {
     },
     body: JSON.stringify({
       email: user.email,
-      amount: 300000, // ₦3,000 in kobo
+      amount: 1000000, // ₦10,000 in kobo
       currency: "NGN",
       metadata: { user_id: user.id, plan: "pro" },
     }),

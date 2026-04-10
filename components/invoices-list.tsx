@@ -133,7 +133,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
             onClick={() => setShowPaywall(true)}
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
           >
-            <Zap size={12} /> Upgrade — ₦3,000/yr
+            <Zap size={12} /> Upgrade — ₦10,000/yr
           </button>
         </div>
       )}

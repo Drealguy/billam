@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment not verified" }, { status: 400 });
   }
 
-  if (data.data.amount < 300000) {
+  if (data.data.amount < 1000000) {
     return NextResponse.json({ error: "Incorrect amount" }, { status: 400 });
   }
 

@@ -5,7 +5,7 @@ import { X, Zap, Loader2, MessageCircle } from "lucide-react";
 import { PaymentSuccessModal } from "@/components/payment-success-modal";
 
 const FREE_LIMIT = 5;
-const WA_LINK = `https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦3,000/year). Please assist me.")}`;
+const WA_LINK = `https://wa.me/2349167802170?text=${encodeURIComponent("Hi! I'd like to upgrade to BILL AM Pro (₦10,000/year). Please assist me.")}`;
 
 interface Props {
   onClose?: () => void;
@@ -68,7 +68,7 @@ export function PaywallModal({ onClose }: Props) {
       const handler = (window as any).PaystackPop.setup({
         key: publicKey,
         email,
-        amount: 300000,
+        amount: 1000000,
         currency: "NGN",
         ref: reference,
         onClose: function () {},
@@ -121,7 +121,7 @@ export function PaywallModal({ onClose }: Props) {
                 Bill Am Pro
               </p>
               <p className="text-2xl font-black text-foreground mt-0.5">
-                ₦3,000
+                ₦10,000
                 <span className="text-sm font-medium text-muted-foreground">/year</span>
               </p>
             </div>
@@ -163,7 +163,7 @@ export function PaywallModal({ onClose }: Props) {
           >
             {loading
               ? <><Loader2 size={16} className="animate-spin" /> Processing…</>
-              : <><Zap size={16} /> Pay ₦3,000 — Upgrade to Pro</>
+              : <><Zap size={16} /> Pay ₦10,000 — Upgrade to Pro</>
             }
           </button>
 

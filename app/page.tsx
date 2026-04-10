@@ -393,42 +393,90 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-5xl font-black">
               Simple, <span className="text-primary">honest</span> pricing
             </h2>
-            <p className="mt-4 text-muted-foreground">Start free. No credit card. No surprises.</p>
+            <p className="mt-4 text-muted-foreground">Start free. Upgrade when you&apos;re ready. No surprises.</p>
           </div>
 
-          <div className="max-w-md mx-auto">
-            <div className="p-8 rounded-2xl border-2 border-primary bg-card relative overflow-hidden">
-              <div className="absolute top-5 right-5 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full uppercase tracking-wider">
-                Free for now
-              </div>
-              <div className="text-4xl font-black mt-2">₦0</div>
-              <div className="text-muted-foreground text-sm mt-1 mb-6">Always free while we&apos;re in beta</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
 
-              <div className="space-y-3">
+            {/* Free */}
+            <div className="p-8 rounded-2xl border border-border bg-card flex flex-col">
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Free</p>
+                <div className="text-5xl font-black">₦0</div>
+                <div className="text-muted-foreground text-sm mt-1">Get started, no card needed</div>
+              </div>
+
+              <div className="space-y-3 flex-1">
                 {[
-                  "Unlimited invoices",
+                  "5 invoices to get started",
                   "3 invoice templates",
                   "PDF downloads",
                   "Client address book",
                   "VAT calculation",
-                  "Multi-currency (NGN, USD, GBP, EUR)",
+                  "Multi-currency support",
                   "Custom brand colours & logo",
-                  "Payment tracking",
                 ].map((f) => (
                   <div key={f} className="flex items-center gap-3 text-sm">
-                    <CheckCircle size={15} className="text-primary flex-shrink-0" />
-                    <span>{f}</span>
+                    <CheckCircle size={14} className="text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">{f}</span>
                   </div>
                 ))}
               </div>
 
               <Link
                 href="/register"
-                className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+                className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 text-sm font-bold text-foreground border border-border rounded-xl hover:bg-secondary transition-colors"
               >
                 Get started free <ArrowRight size={15} />
               </Link>
             </div>
+
+            {/* Pro */}
+            <div className="p-8 rounded-2xl border-2 border-primary bg-card flex flex-col relative overflow-hidden">
+              {/* glow */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute top-5 right-5 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wider">
+                Most popular
+              </div>
+
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Pro</p>
+                <div className="flex items-end gap-1">
+                  <div className="text-5xl font-black">₦10,000</div>
+                </div>
+                <div className="text-muted-foreground text-sm mt-1">per year — less than ₦834/month</div>
+              </div>
+
+              <div className="space-y-3 flex-1">
+                {[
+                  "Unlimited invoices",
+                  "Everything in Free",
+                  "Edit invoices anytime",
+                  "All templates & full branding",
+                  "Client portal with payment info",
+                  "Priority support",
+                  "Contract generation (coming soon)",
+                ].map((f, i) => (
+                  <div key={f} className="flex items-center gap-3 text-sm">
+                    <CheckCircle size={14} className={i === 0 ? "text-primary flex-shrink-0" : "text-primary flex-shrink-0"} />
+                    <span className={f.includes("coming soon") ? "text-muted-foreground" : "text-foreground"}>
+                      {f}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/register"
+                className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Get Pro — ₦10,000/yr <ArrowRight size={15} />
+              </Link>
+              <p className="text-center text-xs text-muted-foreground mt-3">
+                Secure payment via Paystack
+              </p>
+            </div>
+
           </div>
         </div>
       </section>

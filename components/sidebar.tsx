@@ -164,7 +164,7 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
         {plan === "free" && (
           <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
             <p className="text-xs font-bold text-foreground">Upgrade to Pro</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">₦3,000/year — unlimited invoices</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">₦10,000/year — unlimited invoices</p>
             <button
               onClick={() => setShowPaywall(true)}
               className="mt-2 flex items-center gap-1.5 w-full justify-center py-1.5 text-[11px] font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
