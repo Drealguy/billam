@@ -113,6 +113,7 @@ create table public.invoices (
   balance_due      numeric(12,2) not null default 0,
   status           text not null default 'unpaid' check (status in ('unpaid', 'part_payment', 'paid')),
   template         text not null default 'classic' check (template in ('classic', 'clean', 'modern')),
+  project_title    text,
   invoice_date     date not null default current_date,
   due_date         date,
   notes            text,

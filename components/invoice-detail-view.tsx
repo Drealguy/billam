@@ -50,7 +50,7 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
     invoiceNumber: invoice.invoice_number,
     invoiceDate: invoice.invoice_date,
     dueDate: invoice.due_date ?? "",
-    projectTitle: "",
+    projectTitle: invoice.project_title ?? "",
     clientName: (invoice.client_snapshot as { name?: string })?.name ?? "",
     clientEmail: (invoice.client_snapshot as { email?: string })?.email ?? "",
     clientPhone: (invoice.client_snapshot as { phone?: string })?.phone ?? "",

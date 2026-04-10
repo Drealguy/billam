@@ -85,6 +85,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
       balance_due: invoice.total,
       status: "unpaid",
       template: invoice.template,
+      project_title: invoice.project_title,
       invoice_date: new Date().toISOString().split("T")[0],
       due_date: invoice.due_date,
       notes: invoice.notes,

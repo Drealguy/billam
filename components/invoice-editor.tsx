@@ -96,7 +96,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
   const [invoiceNumber, setInvoiceNumber] = useState(invoice.invoice_number);
   const [invoiceDate,   setInvoiceDate]   = useState(invoice.invoice_date);
   const [dueDate,       setDueDate]       = useState(invoice.due_date ?? "");
-  const [projectTitle,  setProjectTitle]  = useState("");
+  const [projectTitle,  setProjectTitle]  = useState(invoice.project_title ?? "");
   const [currency,      setCurrency]      = useState(invoice.currency);
   const [notes,         setNotes]         = useState(invoice.notes ?? "");
 
@@ -166,6 +166,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
         balance_due: balanceDue,
         status,
         invoice_date: invoiceDate,
+        project_title: projectTitle || null,
         due_date: dueDate || null,
         notes: notes || null,
       })
