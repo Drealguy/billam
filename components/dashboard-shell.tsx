@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar, SidebarToggle } from "@/components/sidebar";
+import { SessionWatcher } from "@/components/session-watcher";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
@@ -20,6 +21,7 @@ export function DashboardShell({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <SessionWatcher />
       <Sidebar
         businessName={businessName}
         fullName={fullName}
