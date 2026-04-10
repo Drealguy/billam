@@ -61,6 +61,7 @@ export default function RegisterPage() {
 
     // If session is null, email confirmation is required
     if (!authData.session) {
+      sessionStorage.setItem("pendingEmail", data.email);
       router.push("/verify-email");
     } else {
       router.push("/dashboard");
