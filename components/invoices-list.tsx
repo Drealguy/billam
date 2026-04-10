@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CURRENCY_SYMBOLS, type Invoice } from "@/types";
-import { FileText, Plus, ArrowRight, Trash2, Copy, Link2, Pencil, Zap } from "lucide-react";
+import { FileText, Plus, ArrowRight, Trash2, Link2, Pencil, Zap, Loader2, Copy as CopyIcon } from "lucide-react";
 import { FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
 import { createClient } from "@/lib/supabase";
 
@@ -43,6 +43,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("All");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const filtered = filter === "All"
@@ -67,8 +68,8 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
   };
 
   const handleDuplicate = async (invoice: Invoice) => {
+    setDuplicatingId(invoice.id);
     const supabase = createClient();
-    // Generate a new invoice number
     const newNum = invoice.invoice_number + "-copy";
     await supabase.from("invoices").insert({
       user_id: invoice.user_id,
@@ -90,6 +91,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
       due_date: invoice.due_date,
       notes: invoice.notes,
     });
+    setDuplicatingId(null);
     router.refresh();
   };
 
@@ -215,6 +217,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
           {filtered.map((inv, idx) => {
             const clientName = (inv.client_snapshot as { name?: string })?.name ?? "—";
             const isDeleting = deletingId === inv.id;
+            const isDuplicating = duplicatingId === inv.id;
             const isCopied = copiedId === inv.id;
 
             return (
@@ -258,7 +261,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
                 </div>
 
                 {/* Mobile action row */}
-                <div className="flex items-center gap-2 md:hidden pt-1 border-t border-border/50 mt-1">
+                <div className="flex items-center gap-2 md:hidden pt-1 border-t border-border/50 mt-1flex-wrap">
                   <Link
                     href={`/invoices/${inv.id}`}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -277,15 +280,27 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
                     onClick={() => handleCopyLink(inv.id)}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <Link2 size={12} /> {isCopied ? "Copied!" : "Copy link"}
+                    {isCopied ? <><CopyIcon size={12} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
+                  </button>
+                  <span className="text-border">·</span>
+                  <button
+                    onClick={() => handleDuplicate(inv)}
+                    disabled={isDuplicating}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  >
+                    {isDuplicating
+                      ? <><Loader2 size={12} className="animate-spin" /> Copying…</>
+                      : <><CopyIcon size={12} /> Duplicate</>}
                   </button>
                   <span className="text-border">·</span>
                   <button
                     onClick={() => handleDelete(inv.id)}
                     disabled={isDeleting}
-                    className="flex items-center gap-1 text-xs text-destructive hover:opacity-70"
+                    className="flex items-center gap-1 text-xs text-destructive hover:opacity-70 disabled:opacity-50"
                   >
-                    <Trash2 size={12} /> {isDeleting ? "…" : "Delete"}
+                    {isDeleting
+                      ? <><Loader2 size={12} className="animate-spin" /> Deleting…</>
+                      : <><Trash2 size={12} /> Delete</>}
                   </button>
                 </div>
 
