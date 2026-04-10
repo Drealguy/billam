@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { loginSchema, LoginFormData } from "@/lib/validations";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
@@ -16,7 +16,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
         {label}
       </label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
 }
@@ -24,9 +24,32 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+      className="w-full bg-card border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
       {...props}
     />
+  );
+}
+
+function PasswordInput({ placeholder, autoComplete, ...rest }: React.InputHTMLAttributes<HTMLInputElement>) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className="w-full bg-card border border-border rounded-xl px-4 py-3.5 pr-12 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+        {...rest}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(s => !s)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+        tabIndex={-1}
+      >
+        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
   );
 }
 
@@ -62,7 +85,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-7">
       <div className="space-y-1">
         <h1 className="text-2xl font-black">Welcome back</h1>
         <p className="text-sm text-muted-foreground">Sign in to your Bill Am account.</p>
@@ -79,26 +102,23 @@ function LoginForm() {
         </Field>
 
         <Field label="Password" error={errors.password?.message}>
-          <div className="space-y-1">
-            <Input
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              {...register("password")}
-            />
-            <div className="text-right">
-              <Link
-                href="/forgot-password"
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
+          <PasswordInput
+            placeholder="••••••••"
+            autoComplete="current-password"
+            {...register("password")}
+          />
+          <div className="text-right mt-1.5">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              Forgot password?
+            </Link>
           </div>
         </Field>
 
         {(serverError || callbackError) && (
-          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg">
+          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl">
             {serverError ?? callbackError}
           </div>
         )}
@@ -106,7 +126,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60 mt-2"
         >
           {isSubmitting ? "Signing in…" : "Sign in"}
           {!isSubmitting && <ArrowRight size={15} />}

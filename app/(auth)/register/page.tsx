@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { registerSchema, RegisterFormData } from "@/lib/validations";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, CheckCircle2, Circle } from "lucide-react";
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
@@ -16,7 +16,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
         {label}
       </label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
 }
@@ -24,15 +24,62 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+      className="w-full bg-card border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
       {...props}
     />
+  );
+}
+
+function PasswordInput({
+  placeholder,
+  autoComplete,
+  onValueChange,
+  ...rest
+}: React.InputHTMLAttributes<HTMLInputElement> & { onValueChange?: (v: string) => void }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className="w-full bg-card border border-border rounded-xl px-4 py-3.5 pr-12 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+        onChange={e => { rest.onChange?.(e); onValueChange?.(e.target.value); }}
+        {...rest}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(s => !s)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+        tabIndex={-1}
+      >
+        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
+
+function StrengthRule({ met, label }: { met: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {met
+        ? <CheckCircle2 size={11} className="text-emerald-500 flex-shrink-0" />
+        : <Circle size={11} className="text-muted-foreground/40 flex-shrink-0" />}
+      <span className={`text-[11px] ${met ? "text-emerald-600" : "text-muted-foreground"}`}>{label}</span>
+    </div>
   );
 }
 
 export default function RegisterPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+
+  const rules = [
+    { met: password.length >= 8, label: "At least 8 characters" },
+    { met: /[A-Z]/.test(password), label: "One uppercase letter" },
+    { met: /[0-9]/.test(password), label: "One number" },
+  ];
 
   const {
     register,
@@ -59,7 +106,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // If session is null, email confirmation is required
     if (!authData.session) {
       sessionStorage.setItem("pendingEmail", data.email);
       router.push("/verify-email");
@@ -70,11 +116,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-7">
       <div className="space-y-1">
         <h1 className="text-2xl font-black">Create your account</h1>
         <p className="text-sm text-muted-foreground">
-          Set up your brand and bank details after you&apos;re in.
+          Free to start — no credit card needed.
         </p>
       </div>
 
@@ -96,27 +142,31 @@ export default function RegisterPage() {
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Password" error={errors.password?.message}>
-            <Input
-              type="password"
-              placeholder="Min. 8 characters"
-              autoComplete="new-password"
-              {...register("password")}
-            />
-          </Field>
-          <Field label="Confirm" error={errors.confirm_password?.message}>
-            <Input
-              type="password"
-              placeholder="Repeat password"
-              autoComplete="new-password"
-              {...register("confirm_password")}
-            />
-          </Field>
-        </div>
+        <Field label="Password" error={errors.password?.message}>
+          <PasswordInput
+            placeholder="Create a strong password"
+            autoComplete="new-password"
+            onValueChange={setPassword}
+            {...register("password")}
+          />
+          {/* Strength hints */}
+          {password.length > 0 && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 px-0.5">
+              {rules.map(r => <StrengthRule key={r.label} {...r} />)}
+            </div>
+          )}
+        </Field>
+
+        <Field label="Confirm password" error={errors.confirm_password?.message}>
+          <PasswordInput
+            placeholder="Repeat your password"
+            autoComplete="new-password"
+            {...register("confirm_password")}
+          />
+        </Field>
 
         {serverError && (
-          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg">
+          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl">
             {serverError}
           </div>
         )}
@@ -124,7 +174,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60 mt-2"
         >
           {isSubmitting ? "Creating account…" : "Create free account"}
           {!isSubmitting && <ArrowRight size={15} />}
