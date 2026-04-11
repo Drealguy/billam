@@ -106,13 +106,8 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!authData.session) {
-      sessionStorage.setItem("pendingEmail", data.email);
-      router.push("/verify-email");
-    } else {
-      router.push("/dashboard");
-      router.refresh();
-    }
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
