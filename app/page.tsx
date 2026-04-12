@@ -259,7 +259,7 @@ const MARQUEE_ITEMS = [
 /* ─── page ───────────────────────────────────────────────── */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden">
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
       {/* ── NAV ── */}
@@ -276,16 +276,17 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Mobile: Install App only. Desktop: all three buttons */}
             <NavInstallButton />
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-secondary transition-colors"
+              className="hidden md:block px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-secondary transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+              className="hidden md:block px-4 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
             >
               Get started free
             </Link>
