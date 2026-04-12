@@ -17,51 +17,42 @@ const globalStyles = `
     0%   { transform: translateX(0); }
     100% { transform: translateX(-50%); }
   }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
+
+  /* Very soft: just a gentle fade + 6px lift, nothing dramatic */
+  @keyframes softFade {
+    from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.96) translateY(16px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   .anim-fade-up {
-    animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    opacity: 0;
+    animation: softFade 0.65s cubic-bezier(0.4,0,0.2,1) forwards;
   }
   .anim-fade-in {
-    animation: fadeIn 0.6s ease both;
+    opacity: 0;
+    animation: softFade 0.55s cubic-bezier(0.4,0,0.2,1) forwards;
   }
   .anim-scale-in {
-    animation: scaleIn 0.8s cubic-bezier(0.22,1,0.36,1) both;
+    opacity: 0;
+    animation: softFade 0.75s cubic-bezier(0.4,0,0.2,1) forwards;
   }
 
-  /* scroll-triggered: elements animate when they enter the viewport */
+  /* Scroll-triggered — just opacity + 6px, very subtle */
   @supports (animation-timeline: view()) {
     .scroll-reveal {
-      animation: fadeUp linear both;
+      animation: softFade linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 30%;
-    }
-    .scroll-reveal-scale {
-      animation: scaleIn linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 25%;
+      animation-range: entry 5% entry 28%;
     }
   }
-  /* fallback for browsers without animation-timeline */
   @supports not (animation-timeline: view()) {
-    .scroll-reveal, .scroll-reveal-scale {
-      animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    .scroll-reveal {
+      animation: softFade 0.65s cubic-bezier(0.4,0,0.2,1) both;
     }
   }
 
   .marquee-track {
-    animation: marquee 28s linear infinite;
+    animation: marquee 32s linear infinite;
   }
   .marquee-track:hover {
     animation-play-state: paused;
@@ -361,8 +352,11 @@ export default function LandingPage() {
           <div className="absolute -inset-4 flex items-center justify-center pointer-events-none">
             <div className="w-full h-48 bg-primary/8 rounded-full blur-3xl" />
           </div>
-          <div className="relative">
-            <MockDashboard />
+          {/* horizontal scroll on mobile so the mockup isn't crushed */}
+          <div className="relative overflow-x-auto rounded-2xl">
+            <div style={{ minWidth: "520px" }}>
+              <MockDashboard />
+            </div>
           </div>
         </div>
       </section>
