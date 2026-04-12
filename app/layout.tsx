@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
 import { PWARegister } from "@/components/pwa-register";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 const jost = Jost({
   variable: "--font-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full bg-background text-foreground antialiased">
         <PWARegister />
+        <PWAInstallBanner />
         {children}
       </body>
     </html>
