@@ -62,6 +62,13 @@ export function PWAInstallBanner() {
     }
   }, []);
 
+  // Allow external triggers (e.g., nav install button) to open this banner
+  useEffect(() => {
+    const handler = () => setShow(true);
+    window.addEventListener("pwa-show-banner", handler);
+    return () => window.removeEventListener("pwa-show-banner", handler);
+  }, []);
+
   // Track successful installs via the appinstalled event
   useEffect(() => {
     const onInstalled = () => {

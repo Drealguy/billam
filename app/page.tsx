@@ -7,25 +7,73 @@ import {
   CheckCircle,
   ArrowRight,
   Zap,
-  Shield,
   Users,
 } from "lucide-react";
+import { NavInstallButton } from "@/components/nav-install-button";
+
+/* ─── animations injected once ─────────────────────────────── */
+const globalStyles = `
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .anim-fade-up {
+    animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .anim-fade-in {
+    animation: fadeIn 0.6s ease both;
+  }
+  .anim-scale-in {
+    animation: scaleIn 0.8s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  /* scroll-triggered: elements animate when they enter the viewport */
+  @supports (animation-timeline: view()) {
+    .scroll-reveal {
+      animation: fadeUp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+    .scroll-reveal-scale {
+      animation: scaleIn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 25%;
+    }
+  }
+  /* fallback for browsers without animation-timeline */
+  @supports not (animation-timeline: view()) {
+    .scroll-reveal, .scroll-reveal-scale {
+      animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+  }
+
+  .marquee-track {
+    animation: marquee 28s linear infinite;
+  }
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+`;
 
 /* ─── tiny reusable bits ─────────────────────────────────── */
-
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <a href={href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
       {children}
     </a>
-  );
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-widest">
-      {children}
-    </span>
   );
 }
 
@@ -37,81 +85,194 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─── mock invoice card for hero ─────────────────────────── */
-function MockInvoice() {
+/* ─── mock dashboard for hero ────────────────────────────── */
+function MockDashboard() {
   return (
-    <div className="w-full max-w-sm bg-white rounded-xl overflow-hidden shadow-2xl text-[11px] font-sans select-none">
-      {/* header */}
-      <div className="bg-[#2B52FF] px-5 py-4 flex justify-between items-start">
-        <div>
-          <div className="text-[#2B52FF] font-bold text-sm">Temi Adebayo Studio</div>
-          <div className="text-white/40 text-[9px] uppercase tracking-widest mt-0.5">Creative Direction</div>
+    <div className="w-full rounded-2xl overflow-hidden shadow-2xl border border-border text-[10px] select-none bg-background">
+
+      {/* Browser chrome */}
+      <div className="bg-secondary/60 border-b border-border px-4 py-2.5 flex items-center gap-3">
+        <div className="flex gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
         </div>
-        <div className="text-right">
-          <div className="text-white font-bold text-lg leading-none">Invoice</div>
-          <div className="text-[#2B52FF] font-bold text-[10px] mt-1">No. INV-2026-014</div>
-        </div>
-      </div>
-      {/* body */}
-      <div className="px-5 py-4 bg-gray-50 space-y-3">
-        <div className="flex justify-between text-gray-500 text-[9px] uppercase tracking-wider pb-2 border-b border-gray-200">
-          <span>Billed To</span>
-          <span>Due Date</span>
-        </div>
-        <div className="flex justify-between">
-          <div>
-            <div className="font-bold text-gray-900 text-xs">Konga Nigeria Ltd</div>
-            <div className="text-gray-400 text-[9px] mt-0.5">payments@konga.com</div>
-          </div>
-          <div className="text-right font-semibold text-gray-700 text-[10px]">30 Apr 2026</div>
+        <div className="flex-1 bg-background border border-border rounded-md px-3 py-1 text-[9px] text-muted-foreground text-center">
+          billam.co/dashboard
         </div>
       </div>
-      <div className="px-5 py-3">
-        <div className="flex text-[9px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-1.5 mb-2">
-          <div className="flex-1">Description</div>
-          <div className="w-8 text-center">Qty</div>
-          <div className="w-16 text-right">Amount</div>
-        </div>
-        {[
-          { desc: "Brand Identity Design", qty: 1, amt: "₦350,000" },
-          { desc: "Social Media Kit", qty: 1, amt: "₦120,000" },
-          { desc: "Pitch Deck Design", qty: 2, amt: "₦180,000" },
-        ].map((row) => (
-          <div key={row.desc} className="flex items-center py-1.5 border-b border-gray-50">
-            <div className="flex-1 text-gray-700 font-medium">{row.desc}</div>
-            <div className="w-8 text-center text-gray-400">{row.qty}</div>
-            <div className="w-16 text-right font-semibold text-gray-900">{row.amt}</div>
+
+      {/* Dashboard layout */}
+      <div className="flex" style={{ height: "280px" }}>
+
+        {/* Sidebar */}
+        <div className="w-40 border-r border-border bg-background flex flex-col px-3 py-3 flex-shrink-0">
+          <div className="text-primary font-black uppercase text-[11px] tracking-tight mb-4 px-1">BILL AM</div>
+
+          {/* User card */}
+          <div className="bg-secondary/60 rounded-xl p-2 mb-4 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center text-[8px] font-black text-primary flex-shrink-0">FB</div>
+            <div className="min-w-0">
+              <div className="font-bold text-[9px] truncate">Feranmi biz</div>
+              <div className="text-muted-foreground text-[8px] truncate">Ojediji Feranmi</div>
+            </div>
           </div>
-        ))}
-        <div className="flex justify-between items-center pt-3 mt-1">
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 font-bold uppercase tracking-wide">Unpaid</span>
-          <div className="text-right">
-            <div className="text-[9px] text-gray-400 uppercase tracking-wider">Total Due</div>
-            <div className="text-base font-black text-[#2B52FF]">₦650,000</div>
+
+          {/* Nav items */}
+          <div className="space-y-0.5 flex-1">
+            {[
+              { label: "Overview", active: true },
+              { label: "Invoices" },
+              { label: "Clients" },
+              { label: "Settings" },
+            ].map(({ label, active }) => (
+              <div
+                key={label}
+                className={`px-2.5 py-1.5 rounded-lg text-[9px] font-medium ${
+                  active
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {label}
+              </div>
+            ))}
           </div>
+
+          <div className="text-[8px] text-muted-foreground px-2.5 py-1">Log out</div>
         </div>
-      </div>
-      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-        <div className="text-[9px] text-gray-400">
-          <div className="font-semibold text-gray-600">Zenith Bank · 0123456789</div>
-          <div>Temi Adebayo</div>
-        </div>
-        <div className="text-right">
-          <div className="text-xs font-bold text-gray-800">Thank You!</div>
-          <div className="text-[8px] text-gray-400 uppercase tracking-wider">We appreciate your business</div>
+
+        {/* Main content */}
+        <div className="flex-1 p-4 overflow-hidden bg-secondary/10">
+
+          {/* Top bar */}
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <div className="font-black text-[13px] leading-tight">
+                Welcome back, <span className="text-primary">Ojediji</span> 👋
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">Here&apos;s your overview for Apr 2026</div>
+            </div>
+            <div className="bg-primary text-primary-foreground text-[9px] font-bold px-2.5 py-1.5 rounded-lg flex-shrink-0">
+              + New Invoice
+            </div>
+          </div>
+
+          {/* Setup checklist */}
+          <div className="bg-background border border-border rounded-xl p-3 mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="font-bold text-[10px]">Set up your account</div>
+                <div className="text-muted-foreground text-[8px]">2 of 5 steps completed</div>
+              </div>
+              <div className="w-20 h-1 bg-border rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: "40%" }} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {[
+                { label: "Complete your business profile", done: true },
+                { label: "Upload your logo", done: true },
+                { label: "Set your brand colours", done: false },
+              ].map(({ label, done }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full border flex-shrink-0 flex items-center justify-center ${done ? "border-primary/40 bg-primary/10" : "border-border"}`}>
+                    {done && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </div>
+                  <span className={`text-[8px] ${done ? "text-muted-foreground line-through" : "text-foreground"}`}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: "INVOICES SENT", value: "0", sub: "THIS MONTH", color: "" },
+              { label: "BILLED", value: "₦0", sub: "THIS MONTH", color: "text-primary" },
+              { label: "COLLECTED", value: "₦0", sub: "THIS MONTH", color: "text-emerald-500" },
+              { label: "OUTSTANDING", value: "₦0", sub: "ALL INVOICES", color: "text-amber-500" },
+            ].map(({ label, value, sub, color }) => (
+              <div key={label} className="bg-background border border-border rounded-xl p-2.5">
+                <div className="text-[7px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{label}</div>
+                <div className={`font-black text-[14px] leading-none ${color}`}>{value}</div>
+                <div className="text-[7px] text-muted-foreground mt-0.5">{sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/* ─── mock invoice (used in templates section) ────────────── */
+function MockInvoice() {
+  return (
+    <div className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-xl text-[10px] font-sans select-none border border-gray-100">
+      <div className="bg-[#2B52FF] px-4 py-3 flex justify-between items-start">
+        <div>
+          <div className="text-white font-bold text-[11px]">Temi Adebayo Studio</div>
+          <div className="text-white/50 text-[8px] uppercase tracking-widest mt-0.5">Creative Direction</div>
+        </div>
+        <div className="text-right">
+          <div className="text-white font-bold text-base leading-none">Invoice</div>
+          <div className="text-white/60 font-bold text-[9px] mt-1">INV-2026-014</div>
+        </div>
+      </div>
+      <div className="px-4 py-3 bg-gray-50 space-y-2">
+        <div className="flex justify-between text-gray-400 text-[8px] uppercase tracking-wider pb-1.5 border-b border-gray-200">
+          <span>Billed To</span><span>Due Date</span>
+        </div>
+        <div className="flex justify-between">
+          <div>
+            <div className="font-bold text-gray-900 text-[10px]">Konga Nigeria Ltd</div>
+            <div className="text-gray-400 text-[8px] mt-0.5">payments@konga.com</div>
+          </div>
+          <div className="text-right font-semibold text-gray-700 text-[9px]">30 Apr 2026</div>
+        </div>
+      </div>
+      <div className="px-4 py-2.5">
+        {[
+          { desc: "Brand Identity Design", amt: "₦350,000" },
+          { desc: "Social Media Kit", amt: "₦120,000" },
+          { desc: "Pitch Deck Design", amt: "₦180,000" },
+        ].map((row) => (
+          <div key={row.desc} className="flex items-center py-1.5 border-b border-gray-50">
+            <div className="flex-1 text-gray-700 font-medium text-[9px]">{row.desc}</div>
+            <div className="text-right font-semibold text-gray-900 text-[9px]">{row.amt}</div>
+          </div>
+        ))}
+        <div className="flex justify-between items-center pt-2.5 mt-1">
+          <span className="text-[8px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 font-bold uppercase">Unpaid</span>
+          <div className="text-right">
+            <div className="text-[8px] text-gray-400 uppercase tracking-wider">Total Due</div>
+            <div className="text-sm font-black text-[#2B52FF]">₦650,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── marquee stats strip ─────────────────────────────────── */
+const MARQUEE_ITEMS = [
+  { stat: "2 min", label: "To create your first invoice" },
+  { stat: "3", label: "Beautiful invoice templates" },
+  { stat: "4", label: "Currencies supported" },
+  { stat: "100%", label: "Free to get started" },
+  { stat: "₦650k+", label: "Average invoice value" },
+  { stat: "30 sec", label: "To sign up" },
+];
+
 /* ─── page ───────────────────────────────────────────────── */
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
       {/* ── NAV ── */}
-      <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md anim-fade-in">
         <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between gap-6">
           <span className="text-lg font-black uppercase tracking-tight text-primary flex-shrink-0">
             Bill Am
@@ -124,6 +285,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            <NavInstallButton />
             <Link
               href="/login"
               className="px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-secondary transition-colors"
@@ -141,23 +303,37 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-5 pt-20 pb-16 md:pt-28 md:pb-24 max-w-6xl mx-auto w-full">
-        <Badge>✦ Built for Nigerian Creatives</Badge>
+      <section className="flex-1 flex flex-col items-center text-center px-5 pt-16 pb-12 md:pt-24 md:pb-16 max-w-6xl mx-auto w-full">
 
-        <h1 className="mt-6 text-5xl md:text-7xl font-black leading-[1.02] tracking-tight max-w-3xl">
+        <div className="anim-fade-up" style={{ animationDelay: "0.05s" }}>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-widest">
+            ✦ Built for Nigerian Creatives
+          </span>
+        </div>
+
+        <h1
+          className="mt-6 text-5xl md:text-7xl font-black leading-[1.02] tracking-tight max-w-3xl anim-fade-up"
+          style={{ animationDelay: "0.15s" }}
+        >
           Invoice like a{" "}
           <span className="text-primary">pro.</span>
           <br />
           Get paid <span className="text-primary">faster.</span>
         </h1>
 
-        <p className="mt-6 text-base md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+        <p
+          className="mt-6 text-base md:text-xl text-muted-foreground max-w-xl leading-relaxed anim-fade-up"
+          style={{ animationDelay: "0.25s" }}
+        >
           The invoicing tool built for designers, photographers, videographers
           and every creative professional in Nigeria. Branded, professional, and
           PDF-ready in minutes.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div
+          className="mt-10 flex flex-wrap items-center justify-center gap-4 anim-fade-up"
+          style={{ animationDelay: "0.35s" }}
+        >
           <Link
             href="/register"
             className="flex items-center gap-2 px-7 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
@@ -172,42 +348,49 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <p className="mt-4 text-xs text-muted-foreground">
+        <p className="mt-4 text-xs text-muted-foreground anim-fade-up" style={{ animationDelay: "0.45s" }}>
           Free forever · No credit card required
         </p>
 
-        {/* Mock invoice */}
-        <div className="mt-16 relative w-full flex justify-center">
+        {/* Dashboard mockup */}
+        <div
+          className="mt-14 relative w-full anim-scale-in"
+          style={{ animationDelay: "0.5s" }}
+        >
           {/* glow */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-96 h-64 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -inset-4 flex items-center justify-center pointer-events-none">
+            <div className="w-full h-48 bg-primary/8 rounded-full blur-3xl" />
           </div>
-          <div className="relative rotate-1 hover:rotate-0 transition-transform duration-500">
-            <MockInvoice />
+          <div className="relative">
+            <MockDashboard />
           </div>
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF STRIP ── */}
-      <section className="border-y border-border py-6">
-        <div className="max-w-6xl mx-auto px-5 md:px-10 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 text-center">
-          {[
-            { stat: "2 min", label: "To create your first invoice" },
-            { stat: "3", label: "Beautiful invoice templates" },
-            { stat: "4", label: "Currencies supported" },
-            { stat: "100%", label: "Free to get started" },
-          ].map(({ stat, label }) => (
-            <div key={label}>
-              <div className="text-2xl font-black text-primary">{stat}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
-            </div>
-          ))}
+      {/* ── MARQUEE STRIP ── */}
+      <section className="border-y border-border py-5 overflow-hidden">
+        <div className="flex">
+          {/* duplicate list so the loop is seamless */}
+          <div className="marquee-track flex items-center gap-0 whitespace-nowrap flex-shrink-0">
+            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map(({ stat, label }, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-10 flex-shrink-0"
+              >
+                <div className="flex items-center gap-3 px-10">
+                  <span className="text-xl font-black text-primary">{stat}</span>
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                </div>
+                <span className="text-primary/30 font-black text-lg">✦</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── FEATURES ── */}
       <section id="features" className="py-20 md:py-28 px-5 md:px-10 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-14">
+        <div className="text-center mb-14 scroll-reveal">
           <SectionLabel>Features</SectionLabel>
           <h2 className="text-3xl md:text-5xl font-black">
             Everything you need to{" "}
@@ -253,7 +436,7 @@ export default function LandingPage() {
           ].map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="p-6 rounded-2xl border border-border bg-card hover:border-primary/30 transition-colors group"
+              className="scroll-reveal p-6 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all duration-300 group"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
                 <Icon size={18} className="text-primary" />
@@ -268,7 +451,7 @@ export default function LandingPage() {
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
+          <div className="text-center mb-14 scroll-reveal">
             <SectionLabel>How it works</SectionLabel>
             <h2 className="text-3xl md:text-5xl font-black">
               From signup to{" "}
@@ -301,7 +484,7 @@ export default function LandingPage() {
                 href: null,
               },
             ].map(({ step, title, desc, cta, href }) => (
-              <div key={step} className="relative p-7 rounded-2xl border border-border bg-card">
+              <div key={step} className="scroll-reveal relative p-7 rounded-2xl border border-border bg-card hover:shadow-md transition-shadow duration-300">
                 <div className="text-5xl font-black text-primary/20 mb-4 leading-none">{step}</div>
                 <h3 className="font-bold text-lg mb-2">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">{desc}</p>
@@ -319,7 +502,7 @@ export default function LandingPage() {
       {/* ── TEMPLATES ── */}
       <section className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
+          <div className="text-center mb-14 scroll-reveal">
             <SectionLabel>Templates</SectionLabel>
             <h2 className="text-3xl md:text-5xl font-black">
               Three looks. <span className="text-primary">All professional.</span>
@@ -329,58 +512,62 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Classic",
-                desc: "Traditional layout with bold header. Timeless and authoritative.",
-                tag: "Most popular",
-              },
-              {
-                name: "Clean",
-                desc: "Minimal design, lots of white space. Ideal for premium clients.",
-                tag: null,
-              },
-              {
-                name: "Modern",
-                desc: "Two-column layout with dark header panel. Bold and contemporary.",
-                tag: null,
-              },
-            ].map(({ name, desc, tag }) => (
-              <div
-                key={name}
-                className="rounded-2xl border border-border bg-card overflow-hidden group hover:border-primary/30 transition-colors"
-              >
-                {/* template thumbnail placeholder */}
-                <div className="h-48 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
-                  <div className="w-32 h-40 bg-white/90 rounded shadow-lg flex flex-col overflow-hidden">
-                    <div className="h-10 bg-[#2B52FF] flex items-center px-2">
-                      <div className="w-12 h-1.5 bg-[#2B52FF] rounded" />
-                    </div>
-                    <div className="flex-1 p-2 space-y-1">
-                      <div className="w-full h-1 bg-gray-200 rounded" />
-                      <div className="w-3/4 h-1 bg-gray-200 rounded" />
-                      <div className="mt-2 w-full h-px bg-gray-300" />
-                      <div className="w-full h-1 bg-gray-100 rounded" />
-                      <div className="w-full h-1 bg-gray-100 rounded" />
-                      <div className="w-2/3 h-1 bg-gray-100 rounded" />
-                      <div className="mt-2 flex justify-end">
-                        <div className="w-12 h-2 bg-[#2B52FF] rounded" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            {/* Invoice preview on left */}
+            <div className="scroll-reveal md:col-span-1 flex justify-center">
+              <MockInvoice />
+            </div>
+
+            {/* Template cards */}
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                {
+                  name: "Classic",
+                  desc: "Traditional layout with bold header. Timeless and authoritative.",
+                  tag: "Most popular",
+                },
+                {
+                  name: "Clean",
+                  desc: "Minimal design, lots of white space. Ideal for premium clients.",
+                  tag: null,
+                },
+                {
+                  name: "Modern",
+                  desc: "Two-column layout with dark header panel. Bold and contemporary.",
+                  tag: null,
+                },
+              ].map(({ name, desc, tag }) => (
+                <div
+                  key={name}
+                  className="scroll-reveal rounded-2xl border border-border bg-card overflow-hidden group hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                >
+                  <div className="h-36 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
+                    <div className="w-24 h-32 bg-white/90 rounded shadow-lg flex flex-col overflow-hidden">
+                      <div className="h-8 bg-[#2B52FF]" />
+                      <div className="flex-1 p-2 space-y-1">
+                        <div className="w-full h-1 bg-gray-200 rounded" />
+                        <div className="w-3/4 h-1 bg-gray-200 rounded" />
+                        <div className="mt-2 w-full h-px bg-gray-300" />
+                        <div className="w-full h-1 bg-gray-100 rounded" />
+                        <div className="w-full h-1 bg-gray-100 rounded" />
+                        <div className="mt-2 flex justify-end">
+                          <div className="w-10 h-1.5 bg-[#2B52FF] rounded" />
+                        </div>
                       </div>
                     </div>
+                    {tag && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 bg-primary text-primary-foreground text-[9px] font-bold rounded-full uppercase tracking-wide">
+                        {tag}
+                      </div>
+                    )}
                   </div>
-                  {tag && (
-                    <div className="absolute top-3 right-3 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wide">
-                      {tag}
-                    </div>
-                  )}
+                  <div className="p-4">
+                    <h3 className="font-bold text-base">{name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{desc}</p>
+                  </div>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-bold text-base">{name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{desc}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -388,7 +575,7 @@ export default function LandingPage() {
       {/* ── PRICING ── */}
       <section id="pricing" className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
+          <div className="text-center mb-14 scroll-reveal">
             <SectionLabel>Pricing</SectionLabel>
             <h2 className="text-3xl md:text-5xl font-black">
               Simple, <span className="text-primary">honest</span> pricing
@@ -399,7 +586,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
 
             {/* Free */}
-            <div className="p-8 rounded-2xl border border-border bg-card flex flex-col">
+            <div className="scroll-reveal p-8 rounded-2xl border border-border bg-card flex flex-col hover:shadow-md transition-shadow duration-300">
               <div className="mb-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Free</p>
                 <div className="text-5xl font-black">₦0</div>
@@ -432,8 +619,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pro */}
-            <div className="p-8 rounded-2xl border-2 border-primary bg-card flex flex-col relative overflow-hidden">
-              {/* glow */}
+            <div className="scroll-reveal p-8 rounded-2xl border-2 border-primary bg-card flex flex-col relative overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute top-5 right-5 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wider">
                 Most popular
@@ -441,9 +627,7 @@ export default function LandingPage() {
 
               <div className="mb-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Pro</p>
-                <div className="flex items-end gap-1">
-                  <div className="text-5xl font-black">₦10,000</div>
-                </div>
+                <div className="text-5xl font-black">₦10,000</div>
                 <div className="text-muted-foreground text-sm mt-1">per year — less than ₦834/month</div>
               </div>
 
@@ -456,9 +640,9 @@ export default function LandingPage() {
                   "Client portal with payment info",
                   "Priority support",
                   "Contract generation (coming soon)",
-                ].map((f, i) => (
+                ].map((f) => (
                   <div key={f} className="flex items-center gap-3 text-sm">
-                    <CheckCircle size={14} className={i === 0 ? "text-primary flex-shrink-0" : "text-primary flex-shrink-0"} />
+                    <CheckCircle size={14} className="text-primary flex-shrink-0" />
                     <span className={f.includes("coming soon") ? "text-muted-foreground" : "text-foreground"}>
                       {f}
                     </span>
@@ -483,7 +667,7 @@ export default function LandingPage() {
 
       {/* ── FINAL CTA ── */}
       <section className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
-        <div className="max-w-2xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center scroll-reveal">
           <h2 className="text-4xl md:text-6xl font-black">
             Ready to get <span className="text-primary">paid?</span>
           </h2>
