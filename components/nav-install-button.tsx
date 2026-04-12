@@ -4,48 +4,36 @@ import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 
 export function NavInstallButton() {
-  const [show, setShow] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    // Hide if already running as installed PWA
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true;
+    if (isStandalone) { setHidden(true); return; }
 
-    if (isStandalone) return;
-
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const android = /android/i.test(navigator.userAgent);
-
-    if (ios) {
-      setIsIOS(true);
-      setShow(true);
-      return;
-    }
-
-    if (android) {
-      const handler = (e: Event) => {
-        e.preventDefault();
-        setDeferredPrompt(e);
-        setShow(true);
-      };
-      window.addEventListener("beforeinstallprompt", handler);
-      return () => window.removeEventListener("beforeinstallprompt", handler);
-    }
+    // Capture Android native install prompt when available
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  if (!show) return null;
+  if (hidden) return null;
 
   const handleClick = async () => {
-    if (isIOS) {
-      // Open the existing banner which has iOS share instructions
-      window.dispatchEvent(new CustomEvent("pwa-show-banner"));
-    } else if (deferredPrompt) {
+    if (deferredPrompt) {
+      // Android: trigger native install dialog
       deferredPrompt.prompt();
       await deferredPrompt.userChoice;
       setDeferredPrompt(null);
-      setShow(false);
+    } else {
+      // iOS or any other browser: open the banner with instructions
+      window.dispatchEvent(new CustomEvent("pwa-show-banner"));
     }
   };
 
