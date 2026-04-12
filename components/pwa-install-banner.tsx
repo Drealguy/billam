@@ -102,26 +102,20 @@ export function PWAInstallBanner() {
               </p>
             </div>
 
-            {/* iOS instructions */}
+            {/* iOS — single button that shows instructions */}
             {isIOS && (
               <div className="space-y-2">
-                <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-3">
-                  <Share size={15} className="text-primary flex-shrink-0" />
-                  <p className="text-xs text-foreground">
-                    Tap the <strong>Share</strong> icon at the bottom of Safari
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-3">
-                  <Download size={15} className="text-primary flex-shrink-0" />
-                  <p className="text-xs text-foreground">
-                    Tap <strong>"Add to Home Screen"</strong>
+                <div className="flex items-center gap-2.5 bg-primary/8 border border-primary/20 rounded-xl px-4 py-3">
+                  <Share size={14} className="text-primary flex-shrink-0" />
+                  <p className="text-xs text-foreground leading-relaxed">
+                    Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> in Safari
                   </p>
                 </div>
                 <button
                   onClick={dismiss}
-                  className="w-full py-3 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity"
                 >
-                  Got it ✓
+                  <Download size={16} /> Install App
                 </button>
               </div>
             )}
