@@ -13,14 +13,17 @@ import {
   X,
   Menu,
   Zap,
+  ScrollText,
+  Lock,
 } from "lucide-react";
 import { PaywallModal } from "@/components/paywall-modal";
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/invoices", label: "Invoices", icon: FileText },
-  { href: "/clients", label: "Clients", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard",  label: "Overview",  icon: LayoutDashboard, proOnly: false },
+  { href: "/invoices",   label: "Invoices",   icon: FileText,         proOnly: false },
+  { href: "/clients",    label: "Clients",    icon: Users,            proOnly: false },
+  { href: "/contracts",  label: "Contracts",  icon: ScrollText,       proOnly: true  },
+  { href: "/settings",   label: "Settings",   icon: Settings,         proOnly: false },
 ];
 
 interface SidebarProps {
@@ -132,11 +135,30 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-          {NAV.map(({ href, label, icon: Icon }) => {
+          {NAV.map(({ href, label, icon: Icon, proOnly }) => {
+            const locked = proOnly && plan === "free";
             const active =
               href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(href);
+
+            if (locked) {
+              return (
+                <button
+                  key={href}
+                  onClick={() => { setShowPaywall(true); onClose(); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  <Icon size={17} strokeWidth={1.8} />
+                  <span className="flex-1 text-left">{label}</span>
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-200">
+                    <Lock size={9} className="text-amber-600" />
+                    <span className="text-[9px] font-black uppercase tracking-wider text-amber-700">Pro</span>
+                  </span>
+                </button>
+              );
+            }
+
             return (
               <Link
                 key={href}
