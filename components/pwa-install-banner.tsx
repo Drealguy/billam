@@ -3,30 +3,57 @@
 import { useEffect, useState } from "react";
 import { X, Download, Share } from "lucide-react";
 
+const DISMISSED_KEY  = "pwa-dismissed-at";   // timestamp of last dismissal
+const INSTALLED_KEY  = "pwa-installed";       // set when app is installed
+const COOLDOWN_DAYS  = 7;                     // days before showing again after dismiss
+
+function recentlyDismissed() {
+  const ts = localStorage.getItem(DISMISSED_KEY);
+  if (!ts) return false;
+  return Date.now() - parseInt(ts) < COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+}
+
 export function PWAInstallBanner() {
-  const [show, setShow] = useState(false);
+  const [show, setShow]   = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Already installed — don't show
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    // Already dismissed — don't show
-    if (localStorage.getItem("pwa-dismissed")) return;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
 
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window.navigator as any).standalone;
+    // Already running as installed app — never show
+    if (isStandalone) {
+      // Mark as installed so we can detect uninstall later
+      localStorage.setItem(INSTALLED_KEY, "1");
+      return;
+    }
+
+    const ios     = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const android = /android/i.test(navigator.userAgent);
 
+    // Detect uninstall: was previously installed but no longer in standalone mode
+    const wasInstalled = localStorage.getItem(INSTALLED_KEY);
+    if (wasInstalled && !isStandalone) {
+      // They uninstalled — reset everything so the banner shows again
+      localStorage.removeItem(INSTALLED_KEY);
+      localStorage.removeItem(DISMISSED_KEY);
+    }
+
     if (ios) {
+      if (recentlyDismissed()) return;
       setIsIOS(true);
       setTimeout(() => setShow(true), 2500);
       return;
     }
 
     if (android) {
-      // Listen for Chrome's install prompt
+      // Android: beforeinstallprompt only fires when app is NOT installed
+      // So if it fires, the app was either never installed or was uninstalled
       const handler = (e: Event) => {
         e.preventDefault();
+        if (recentlyDismissed()) return;
         setDeferredPrompt(e);
         setTimeout(() => setShow(true), 2500);
       };
@@ -35,9 +62,20 @@ export function PWAInstallBanner() {
     }
   }, []);
 
+  // Track successful installs via the appinstalled event
+  useEffect(() => {
+    const onInstalled = () => {
+      localStorage.setItem(INSTALLED_KEY, "1");
+      localStorage.removeItem(DISMISSED_KEY);
+      setShow(false);
+    };
+    window.addEventListener("appinstalled", onInstalled);
+    return () => window.removeEventListener("appinstalled", onInstalled);
+  }, []);
+
   const dismiss = () => {
     setShow(false);
-    localStorage.setItem("pwa-dismissed", "1");
+    localStorage.setItem(DISMISSED_KEY, Date.now().toString());
   };
 
   const install = async () => {
@@ -45,6 +83,10 @@ export function PWAInstallBanner() {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") {
+      localStorage.setItem(INSTALLED_KEY, "1");
+      localStorage.removeItem(DISMISSED_KEY);
+      setShow(false);
+    } else {
       dismiss();
     }
     setDeferredPrompt(null);
@@ -54,13 +96,13 @@ export function PWAInstallBanner() {
 
   return (
     <>
-      {/* Overlay */}
+      {/* Backdrop */}
       <div
         className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={dismiss}
       />
 
-      {/* Banner — slides up from bottom */}
+      {/* Banner */}
       <div
         className="fixed bottom-0 left-0 right-0 z-[101] p-4"
         style={{ animation: "slideUp 0.35s cubic-bezier(0.32,0.72,0,1) both" }}
@@ -102,10 +144,10 @@ export function PWAInstallBanner() {
               </p>
             </div>
 
-            {/* iOS — single button that shows instructions */}
+            {/* iOS */}
             {isIOS && (
               <div className="space-y-2">
-                <div className="flex items-center gap-2.5 bg-primary/8 border border-primary/20 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2.5 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                   <Share size={14} className="text-primary flex-shrink-0" />
                   <p className="text-xs text-foreground leading-relaxed">
                     Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> in Safari
@@ -120,13 +162,13 @@ export function PWAInstallBanner() {
               </div>
             )}
 
-            {/* Android install button */}
+            {/* Android */}
             {!isIOS && (
               <button
                 onClick={install}
                 className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity"
               >
-                <Download size={16} /> Install App — It&apos;s Free
+                <Download size={16} /> Install App
               </button>
             )}
 
