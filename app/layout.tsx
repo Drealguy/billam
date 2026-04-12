@@ -3,6 +3,7 @@ import { Jost } from "next/font/google";
 import "./globals.css";
 import { PWARegister } from "@/components/pwa-register";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
+import { Analytics } from "@vercel/analytics/next";
 
 const jost = Jost({
   variable: "--font-sans",
@@ -62,6 +63,7 @@ export default function RootLayout({
         <PWARegister />
         <PWAInstallBanner />
         {children}
+        <Analytics />
       </body>
     </html>
   );
