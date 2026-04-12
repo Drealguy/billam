@@ -87,7 +87,7 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
         {/* ── INVOICE CARD ── */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="px-8 py-7 flex justify-between items-start" style={{ background: brand }}>
+          <div className="px-4 sm:px-8 py-5 sm:py-7 flex justify-between items-start gap-4" style={{ background: brand }}>
             <div>
               {profile?.logo_url && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -114,7 +114,7 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
           </div>
 
           {/* Billed to + dates */}
-          <div className="px-8 py-5 bg-gray-50 border-b border-gray-100 grid grid-cols-2 gap-6">
+          <div className="px-4 sm:px-8 py-5 bg-gray-50 border-b border-gray-100 grid grid-cols-2 gap-4">
             <div>
               <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Billed To</p>
               <p className="font-bold text-gray-900">{snap?.name || "Client"}</p>
@@ -134,8 +134,9 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
             </div>
           </div>
 
-          {/* Line items */}
-          <div className="px-8 py-5">
+          {/* Line items — overflow-x-auto so it scrolls on narrow screens */}
+          <div className="px-4 sm:px-8 py-5 overflow-x-auto">
+            <div style={{ minWidth: "340px" }}>
             <div className="flex text-[9px] font-bold uppercase tracking-wider text-gray-400 border-b-2 pb-2 mb-1" style={{ borderColor: brand }}>
               <div className="flex-1">Description</div>
               <div className="w-12 text-center">Qty</div>
@@ -176,11 +177,12 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
                 </div>
               </div>
             </div>
+            </div>{/* end min-width wrapper */}
           </div>
 
           {/* Status bar */}
           <div
-            className="mx-8 mb-6 px-4 py-3 rounded-xl flex items-center justify-between"
+            className="mx-4 sm:mx-8 mb-6 px-4 py-3 rounded-xl flex items-center justify-between"
             style={{ background: status.bg, border: `1px solid ${status.border}` }}
           >
             <span className="text-sm font-bold" style={{ color: status.text }}>{status.label}</span>
@@ -189,7 +191,7 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
 
           {/* Notes / Contract Terms */}
           {invoice.notes && (
-            <div className="mx-8 mb-6 px-4 py-4 rounded-xl border border-gray-100 bg-gray-50">
+            <div className="mx-4 sm:mx-8 mb-6 px-4 py-4 rounded-xl border border-gray-100 bg-gray-50">
               <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Contract Terms & Notes</p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{invoice.notes}</p>
             </div>

@@ -140,7 +140,8 @@ export function ClientsManager({ clients: initial, userId }: Props) {
     const { error } = await supabase
       .from("clients")
       .update(data)
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", userId); // Prevent IDOR: scope to authenticated user
 
     setSaving(false);
     if (error) return alert("Error: " + error.message);
@@ -156,7 +157,7 @@ export function ClientsManager({ clients: initial, userId }: Props) {
     if (!confirm("Delete this client? Their invoices will not be deleted.")) return;
     setDeletingId(id);
     const supabase = createClient();
-    const { error } = await supabase.from("clients").delete().eq("id", id);
+    const { error } = await supabase.from("clients").delete().eq("id", id).eq("user_id", userId);
     setDeletingId(null);
     if (error) { alert("Error deleting client: " + error.message); return; }
     setClients(p => p.filter(c => c.id !== id));
@@ -264,8 +265,8 @@ export function ClientsManager({ clients: initial, userId }: Props) {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Actions — always visible on mobile, hover-reveal on desktop */}
+                  <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Link
                       href={`/invoices/new?client=${client.id}`}
                       className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-border rounded-lg hover:bg-secondary transition-colors"

@@ -92,7 +92,8 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
     if (!confirm("Delete this invoice? This cannot be undone.")) return;
     setDeleting(true);
     const supabase = createClient();
-    await supabase.from("invoices").delete().eq("id", invoice.id);
+    // Always scope by user_id to prevent IDOR — even if RLS is configured, defence in depth
+    await supabase.from("invoices").delete().eq("id", invoice.id).eq("user_id", invoice.user_id);
     router.push("/invoices");
     router.refresh();
   };

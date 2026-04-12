@@ -147,7 +147,7 @@ export function PWAInstallBanner() {
             <div>
               <p className="font-black text-foreground text-base">Add to your home screen</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Install Bill Am for a faster, full-screen experience — no browser bar.
+                Install Bill Am for a faster, full-screen experience no browser bar.
               </p>
             </div>
 

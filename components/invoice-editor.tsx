@@ -171,7 +171,8 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
         due_date: dueDate || null,
         notes: notes || null,
       })
-      .eq("id", invoice.id);
+      .eq("id", invoice.id)
+      .eq("user_id", invoice.user_id); // Prevent IDOR: scope to authenticated user
 
     setSaving(false);
     if (error) { alert("Error: " + error.message); return; }

@@ -57,7 +57,9 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
     if (!confirm("Delete this invoice? This cannot be undone.")) return;
     setDeletingId(id);
     const supabase = createClient();
-    await supabase.from("invoices").delete().eq("id", id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setDeletingId(null); return; }
+    await supabase.from("invoices").delete().eq("id", id).eq("user_id", user.id);
     router.refresh();
     setDeletingId(null);
   };
@@ -71,9 +73,11 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
   const handleDuplicate = async (invoice: Invoice) => {
     setDuplicatingId(invoice.id);
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setDuplicatingId(null); return; }
     const newNum = invoice.invoice_number + "-copy";
     await supabase.from("invoices").insert({
-      user_id: invoice.user_id,
+      user_id: user.id, // Use authenticated user's ID, never trust client-side value
       invoice_number: newNum,
       client_id: invoice.client_id,
       client_snapshot: invoice.client_snapshot,
@@ -154,7 +158,8 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
         </Link>
       </div>
 
-      {/* Filter tabs */}
+      {/* Filter tabs — scrollable on mobile so they never overflow */}
+      <div className="overflow-x-auto pb-0.5">
       <div className="flex items-center gap-1 p-1 bg-card border border-border rounded-xl w-fit">
         {FILTERS.map(f => (
           <button
@@ -174,6 +179,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
             </span>
           </button>
         ))}
+      </div>
       </div>
 
       {/* Summary bar */}
@@ -262,7 +268,7 @@ export function InvoicesList({ invoices, defaultCurrency, plan }: Props) {
                 </div>
 
                 {/* Mobile action row */}
-                <div className="flex items-center gap-2 md:hidden pt-1 border-t border-border/50 mt-1flex-wrap">
+                <div className="flex flex-wrap items-center gap-2 md:hidden pt-1 border-t border-border/50 mt-1">
                   <Link
                     href={`/invoices/${inv.id}`}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
