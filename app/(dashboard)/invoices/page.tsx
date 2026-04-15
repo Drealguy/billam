@@ -16,7 +16,7 @@ export default async function InvoicesPage() {
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
-    supabase.from("profiles").select("default_currency, plan").eq("id", user.id).single(),
+    supabase.from("profiles").select("default_currency").eq("id", user.id).single(),
   ]);
 
   const p = profile as Profile | null;
@@ -25,7 +25,6 @@ export default async function InvoicesPage() {
     <InvoicesList
       invoices={(invoices ?? []) as Invoice[]}
       defaultCurrency={p?.default_currency ?? "NGN"}
-      plan={p?.plan ?? "free"}
     />
   );
 }

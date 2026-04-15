@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createAdminSupabaseClient } from "@/lib/supabase-admin";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicInvoiceView } from "@/components/public-invoice-view";
@@ -12,7 +12,10 @@ export default async function PublicInvoicePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createServerSupabaseClient();
+
+  // Use admin client so unauthenticated visitors can read the invoice
+  // (the anon client is blocked by RLS — only the owner can read their invoices)
+  const supabase = createAdminSupabaseClient();
 
   const { data: invoice } = await supabase
     .from("invoices")

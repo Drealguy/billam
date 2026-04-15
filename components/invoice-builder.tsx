@@ -8,7 +8,6 @@ import type { Profile, Client, LineItem } from "@/types";
 import { CURRENCY_SYMBOLS, VAT_RATE } from "@/types";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { createClient } from "@/lib/supabase";
-import { PaywallModal, FREE_INVOICE_LIMIT } from "@/components/paywall-modal";
 
 interface Props {
   profile: Profile;
@@ -16,8 +15,6 @@ interface Props {
   defaultInvoiceNumber: string;
   userId: string;
   preselectedClientId?: string;
-  invoiceCount: number;
-  plan: "free" | "pro";
 }
 
 type Section = "client" | "info" | "items" | "payment";
@@ -95,10 +92,9 @@ function Collapsible({
   );
 }
 
-export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId, invoiceCount, plan }: Props) {
+export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const isLocked = plan === "free" && invoiceCount >= FREE_INVOICE_LIMIT;
   const [open, setOpen] = useState<Record<Section, boolean>>({
     client: true,
     info: true,
@@ -108,17 +104,14 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
 
   const toggle = (s: Section) => setOpen((p) => ({ ...p, [s]: !p[s] }));
 
-  // Pre-fill client if coming from clients page
   const preselected = clients.find(c => c.id === preselectedClientId);
 
-  // Client
   const [clientId, setClientId] = useState(preselected?.id ?? "");
   const [clientName, setClientName] = useState(preselected?.name ?? "");
   const [clientEmail, setClientEmail] = useState(preselected?.email ?? "");
   const [clientPhone, setClientPhone] = useState(preselected?.phone ?? "");
   const [clientAddress, setClientAddress] = useState(preselected?.address ?? "");
 
-  // Invoice info
   const [invoiceNumber, setInvoiceNumber] = useState(defaultInvoiceNumber);
   const [invoiceDate, setInvoiceDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -128,17 +121,14 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
   const [currency, setCurrency] = useState(profile?.default_currency ?? "NGN");
   const [notes, setNotes] = useState("");
 
-  // Line items
   const [items, setItems] = useState<
     { description: string; details: string; quantity: number; unit_price: number }[]
   >([{ description: "", details: "", quantity: 1, unit_price: 0 }]);
 
-  // Payment
   const [vatEnabled, setVatEnabled] = useState(false);
   const [status, setStatus] = useState<"unpaid" | "part_payment" | "paid">("unpaid");
   const [depositPaid, setDepositPaid] = useState(0);
 
-  // Calculations
   const subtotal = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
   const vatAmount = vatEnabled ? subtotal * VAT_RATE : 0;
   const total = subtotal + vatAmount;
@@ -160,7 +150,6 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
     []
   );
 
-  // When a saved client is selected, populate fields
   const handleClientSelect = (id: string) => {
     setClientId(id);
     if (!id) return;
@@ -230,7 +219,6 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
     router.push(`/invoices/${data.id}`);
   };
 
-  // Data for preview
   const previewData = {
     profile,
     invoiceNumber,
@@ -262,9 +250,6 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Paywall */}
-      {isLocked && <PaywallModal onClose={() => router.push("/invoices")} />}
-
       {/* Top bar */}
       <div className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between gap-4">
@@ -449,7 +434,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
             </button>
           </Collapsible>
 
-          {/* Payment */}
+          {/* Payment & Notes */}
           <Collapsible title="Payment & Notes" icon="💳" open={open.payment} onToggle={() => toggle("payment")}>
             <Field label="Payment Status">
               <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>

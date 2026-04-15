@@ -3,22 +3,25 @@
 import { useState } from "react";
 import { Sidebar, SidebarToggle } from "@/components/sidebar";
 import { SessionWatcher } from "@/components/session-watcher";
+import { NavInstallButton } from "@/components/nav-install-button";
+import { NotificationBell } from "@/components/notification-bell";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import type { Notification } from "@/types";
 
 interface DashboardShellProps {
   businessName: string;
   fullName: string;
-  plan: "free" | "pro";
   logoUrl: string;
+  notifications: Notification[];
   children: React.ReactNode;
 }
 
 export function DashboardShell({
   businessName,
   fullName,
-  plan,
   logoUrl,
+  notifications,
   children,
 }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,7 +32,6 @@ export function DashboardShell({
       <Sidebar
         businessName={businessName}
         fullName={fullName}
-        plan={plan}
         logoUrl={logoUrl}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -41,20 +43,23 @@ export function DashboardShell({
         <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 flex-shrink-0 bg-background">
           <div className="flex items-center gap-3">
             <SidebarToggle onClick={() => setSidebarOpen(true)} />
-            {/* Mobile logo */}
             <span className="lg:hidden text-base font-black uppercase tracking-tight text-primary">
               Bill Am
             </span>
           </div>
 
           {/* Top-right actions */}
-          <Link
-            href="/invoices/new"
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
-          >
-            <Plus size={14} />
-            New Invoice
-          </Link>
+          <div className="flex items-center gap-2">
+            <NavInstallButton />
+            <NotificationBell notifications={notifications} />
+            <Link
+              href="/invoices/new"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Plus size={14} />
+              New Invoice
+            </Link>
+          </div>
         </header>
 
         {/* Page content */}

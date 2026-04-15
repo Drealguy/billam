@@ -16,7 +16,7 @@ export default async function NewInvoicePage({
 
   const { client: preselectedClientId } = await searchParams;
 
-  const [{ data: profile }, { data: clients }, { data: lastInvoice }, { count: invoiceCount }] =
+  const [{ data: profile }, { data: clients }, { data: lastInvoice }] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
       supabase.from("clients").select("*").eq("user_id", user.id).order("name"),
@@ -26,13 +26,8 @@ export default async function NewInvoicePage({
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1),
-      supabase
-        .from("invoices")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id),
     ]);
 
-  // Auto-generate next invoice number
   const lastNum = lastInvoice?.[0]?.invoice_number ?? null;
   let nextNumber = "INV-2026-001";
   if (lastNum) {
@@ -43,17 +38,13 @@ export default async function NewInvoicePage({
     }
   }
 
-  const p = profile as Profile | null;
-
   return (
     <InvoiceBuilder
-      profile={p as Profile}
+      profile={profile as Profile}
       clients={(clients ?? []) as Client[]}
       defaultInvoiceNumber={nextNumber}
       userId={user.id}
       preselectedClientId={preselectedClientId}
-      invoiceCount={invoiceCount ?? 0}
-      plan={p?.plan ?? "free"}
     />
   );
 }

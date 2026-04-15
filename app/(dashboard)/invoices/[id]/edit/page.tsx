@@ -23,11 +23,6 @@ export default async function EditInvoicePage({
 
   if (!invoice) notFound();
 
-  // Free plan users cannot edit invoices
-  if ((profile as { plan?: string } | null)?.plan !== "pro") {
-    redirect(`/invoices/${id}`);
-  }
-
   return (
     <InvoiceEditor
       invoice={invoice as Invoice}

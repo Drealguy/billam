@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { ScrollText, Sparkles } from "lucide-react";
+import { ScrollText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -12,29 +12,13 @@ export default async function ContractsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user.id)
-    .single();
-
-  // Free users should never land here (sidebar blocks it), but guard anyway
-  if (!profile || profile.plan !== "pro") {
-    redirect("/dashboard");
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-5 text-center">
       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
         <ScrollText size={28} className="text-primary" />
       </div>
 
-      <div className="flex items-center gap-2 mb-3">
-        <h1 className="text-2xl font-black">Contracts</h1>
-        <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-wider">
-          <Sparkles size={10} /> Pro
-        </span>
-      </div>
+      <h1 className="text-2xl font-black mb-3">Contracts</h1>
 
       <p className="text-muted-foreground text-sm max-w-sm leading-relaxed mb-2">
         Send professional contracts to clients, collect e-signatures, and keep

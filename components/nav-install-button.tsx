@@ -14,7 +14,11 @@ export function NavInstallButton() {
       (window.navigator as any).standalone === true;
     if (isStandalone) { setHidden(true); return; }
 
-    // Capture Android native install prompt when available
+    // Pick up the prompt captured early (before React mounted)
+    const early = (window as any).__pwaPrompt;
+    if (early) { setDeferredPrompt(early); return; }
+
+    // Fallback listener if early capture missed it
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);

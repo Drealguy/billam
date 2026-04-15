@@ -25,18 +25,19 @@ export function PWAInstallBanner() {
 
     // Already running as installed app — never show
     if (isStandalone) {
-      // Mark as installed so we can detect uninstall later
       localStorage.setItem(INSTALLED_KEY, "1");
       return;
     }
 
-    const ios     = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    // iPadOS 13+ reports as Macintosh, so check touch points too
+    const ios =
+      /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     const android = /android/i.test(navigator.userAgent);
 
     // Detect uninstall: was previously installed but no longer in standalone mode
     const wasInstalled = localStorage.getItem(INSTALLED_KEY);
     if (wasInstalled && !isStandalone) {
-      // They uninstalled — reset everything so the banner shows again
       localStorage.removeItem(INSTALLED_KEY);
       localStorage.removeItem(DISMISSED_KEY);
     }
@@ -49,8 +50,17 @@ export function PWAInstallBanner() {
     }
 
     if (android) {
-      // Android: beforeinstallprompt only fires when app is NOT installed
-      // So if it fires, the app was either never installed or was uninstalled
+      // Check if the prompt was captured early (before React mounted)
+      const early = (window as any).__pwaPrompt;
+      if (early) {
+        if (!recentlyDismissed()) {
+          setDeferredPrompt(early);
+          setTimeout(() => setShow(true), 2500);
+        }
+        return;
+      }
+
+      // Fallback: listen for it if we somehow missed the early capture
       const handler = (e: Event) => {
         e.preventDefault();
         if (recentlyDismissed()) return;

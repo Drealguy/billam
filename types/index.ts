@@ -68,6 +68,15 @@ export interface Invoice {
   updated_at: string;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  read: boolean;
+  created_at: string;
+}
+
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   NGN: "₦",
   USD: "$",

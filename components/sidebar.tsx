@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -12,24 +11,20 @@ import {
   LogOut,
   X,
   Menu,
-  Zap,
   ScrollText,
-  Lock,
 } from "lucide-react";
-import { PaywallModal } from "@/components/paywall-modal";
 
 const NAV = [
-  { href: "/dashboard",  label: "Overview",  icon: LayoutDashboard, proOnly: false },
-  { href: "/invoices",   label: "Invoices",   icon: FileText,         proOnly: false },
-  { href: "/clients",    label: "Clients",    icon: Users,            proOnly: false },
-  { href: "/contracts",  label: "Contracts",  icon: ScrollText,       proOnly: true  },
-  { href: "/settings",   label: "Settings",   icon: Settings,         proOnly: false },
+  { href: "/dashboard",  label: "Overview",  icon: LayoutDashboard },
+  { href: "/invoices",   label: "Invoices",   icon: FileText        },
+  { href: "/clients",    label: "Clients",    icon: Users           },
+  { href: "/contracts",  label: "Contracts",  icon: ScrollText      },
+  { href: "/settings",   label: "Settings",   icon: Settings        },
 ];
 
 interface SidebarProps {
   businessName: string;
   fullName: string;
-  plan: "free" | "pro";
   logoUrl: string;
   open: boolean;
   onClose: () => void;
@@ -50,10 +45,9 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }: SidebarProps) {
+export function Sidebar({ businessName, fullName, logoUrl, open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleLogout = async () => {
     const { createClient } = await import("@/lib/supabase");
@@ -65,9 +59,6 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
 
   return (
     <>
-      {/* Paywall modal — must be outside <aside> so CSS transforms don't confine fixed positioning */}
-      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
-
       {/* Mobile overlay */}
       {open && (
         <div
@@ -123,11 +114,6 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                 <span className="text-[10px] text-primary font-semibold">Active</span>
-                {plan === "free" && (
-                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-full leading-none">
-                    Free Trial
-                  </span>
-                )}
               </div>
             </div>
           </div>
@@ -135,29 +121,11 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-          {NAV.map(({ href, label, icon: Icon, proOnly }) => {
-            const locked = proOnly && plan === "free";
+          {NAV.map(({ href, label, icon: Icon }) => {
             const active =
               href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(href);
-
-            if (locked) {
-              return (
-                <button
-                  key={href}
-                  onClick={() => { setShowPaywall(true); onClose(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                >
-                  <Icon size={17} strokeWidth={1.8} />
-                  <span className="flex-1 text-left">{label}</span>
-                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-200">
-                    <Lock size={9} className="text-amber-600" />
-                    <span className="text-[9px] font-black uppercase tracking-wider text-amber-700">Pro</span>
-                  </span>
-                </button>
-              );
-            }
 
             return (
               <Link
@@ -181,20 +149,6 @@ export function Sidebar({ businessName, fullName, plan, logoUrl, open, onClose }
             );
           })}
         </nav>
-
-        {/* Upgrade CTA for free users */}
-        {plan === "free" && (
-          <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
-            <p className="text-xs font-bold text-foreground">Upgrade to Pro</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">₦10,000/year — unlimited invoices</p>
-            <button
-              onClick={() => setShowPaywall(true)}
-              className="mt-2 flex items-center gap-1.5 w-full justify-center py-1.5 text-[11px] font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
-            >
-              <Zap size={11} /> Upgrade now
-            </button>
-          </div>
-        )}
 
         {/* Logout */}
         <div className="px-3 py-4 border-t border-border flex-shrink-0">

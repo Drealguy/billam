@@ -6,14 +6,12 @@ import { useRouter } from "next/navigation";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { CURRENCY_SYMBOLS } from "@/types";
 import type { Invoice, Profile, LineItem } from "@/types";
-import { ArrowLeft, Link2, Download, Pencil, Trash2, Check, Lock } from "lucide-react";
+import { ArrowLeft, Link2, Download, Pencil, Trash2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase";
-import { PaywallModal } from "@/components/paywall-modal";
 
 interface Props {
   invoice: Invoice;
   profile: Profile;
-  plan: "free" | "pro";
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -27,11 +25,10 @@ const STATUS_LABELS: Record<string, string> = {
   part_payment: "Part Paid",
 };
 
-export function InvoiceDetailView({ invoice, profile, plan }: Props) {
+export function InvoiceDetailView({ invoice, profile }: Props) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const sym =
     CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ??
@@ -84,7 +81,6 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
   };
 
   const handleDownloadPDF = () => {
-    // Open the public page and trigger print
     window.open(`/i/${invoice.id}?print=1`, "_blank");
   };
 
@@ -92,7 +88,6 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
     if (!confirm("Delete this invoice? This cannot be undone.")) return;
     setDeleting(true);
     const supabase = createClient();
-    // Always scope by user_id to prevent IDOR — even if RLS is configured, defence in depth
     await supabase.from("invoices").delete().eq("id", invoice.id).eq("user_id", invoice.user_id);
     router.push("/invoices");
     router.refresh();
@@ -100,7 +95,6 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 md:px-8 space-y-6">
-      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
@@ -137,22 +131,12 @@ export function InvoiceDetailView({ invoice, profile, plan }: Props) {
           >
             <Download size={13} /> Download PDF
           </button>
-          {plan === "free" ? (
-            <button
-              onClick={() => setShowPaywall(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-muted-foreground border border-border rounded-lg hover:bg-secondary transition-colors"
-              title="Upgrade to Pro to edit invoices"
-            >
-              <Lock size={13} /> Edit
-            </button>
-          ) : (
-            <Link
-              href={`/invoices/${invoice.id}/edit`}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
-            >
-              <Pencil size={13} /> Edit
-            </Link>
-          )}
+          <Link
+            href={`/invoices/${invoice.id}/edit`}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
+          >
+            <Pencil size={13} /> Edit
+          </Link>
           <button
             onClick={handleDelete}
             disabled={deleting}

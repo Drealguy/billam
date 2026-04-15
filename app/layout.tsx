@@ -57,6 +57,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Bill Am" />
+        {/* Capture beforeinstallprompt early — before React mounts — so it isn't missed */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            window.__pwaPrompt = e;
+          });
+        `}} />
       </head>
       <body className="min-h-full bg-background text-foreground antialiased">
         <PWARegister />
