@@ -56,6 +56,28 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
     setTimeout(() => setAcctCopied(false), 2000);
   };
 
+  if (invoice.template === "studio") {
+    return (
+      <StudioPublicView
+        invoice={invoice}
+        profile={profile}
+        copied={copied}
+        onCopyLink={handleCopyLink}
+      />
+    );
+  }
+
+  if (invoice.template === "modern") {
+    return (
+      <ReceiptPublicView
+        invoice={invoice}
+        profile={profile}
+        copied={copied}
+        onCopyLink={handleCopyLink}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ background: "#f5f5f0" }}>
 
@@ -255,6 +277,327 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
           Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
         </p>
       </div>
+    </div>
+  );
+}
+
+function StudioPublicView({
+  invoice,
+  profile,
+  copied,
+  onCopyLink,
+}: {
+  invoice: Invoice;
+  profile: Profile;
+  copied: boolean;
+  onCopyLink: () => void;
+}) {
+  const sym = CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ?? invoice.currency;
+  const items = invoice.line_items as LineItem[];
+  const snap = invoice.client_snapshot as { name?: string; email?: string; phone?: string; address?: string };
+  const status = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.unpaid;
+  const brand = profile?.brand_colour ?? "#2B52FF";
+  const initial = (profile?.business_name || "B").charAt(0).toUpperCase();
+
+  return (
+    <div className="min-h-screen" style={{ background: "#f5f5f0" }}>
+      {/* ── TOP BAR (hidden on print) ── */}
+      <div className="no-print sticky top-0 z-30 border-b border-black/10 bg-white/90 backdrop-blur">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-black uppercase text-sm" style={{ color: brand }}>Bill Am</span>
+            <span className="text-black/20 mx-1">·</span>
+            <span className="text-sm text-black/50 hidden sm:block">Invoice #{invoice.invoice_number}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={onCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-black/15 hover:bg-black/5 transition-colors bg-white">
+              {copied ? <><Check size={12} style={{ color: brand }} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+              style={{ background: brand }}
+            >
+              <Download size={12} /> Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-5">
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+          {/* Header */}
+          <div className="px-4 sm:px-8 py-6 flex justify-between items-start gap-4">
+            <div className="flex items-center gap-3">
+              {profile?.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.logo_url} alt="logo" className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                  style={{ background: brand }}
+                >
+                  {initial}
+                </div>
+              )}
+              <div>
+                <div className="font-bold text-gray-900 leading-tight">{profile?.business_name || "Business"}</div>
+                {profile?.business_tagline && (
+                  <div className="text-xs text-gray-400 mt-0.5">{profile.business_tagline}</div>
+                )}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="font-black text-2xl tracking-wide text-gray-900">INVOICE</div>
+              <div className="text-xs font-bold mt-1" style={{ color: brand }}>{formatDate(invoice.invoice_date)}</div>
+            </div>
+          </div>
+
+          {/* Contact + Billed to */}
+          <div className="px-4 sm:px-8 py-5 bg-gray-50 border-y border-gray-100 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Contact</p>
+              {profile?.phone && <p className="text-xs text-gray-600">{profile.phone}</p>}
+              <p className="text-xs text-gray-600 mt-1">No. {invoice.invoice_number}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">To</p>
+              <p className="font-bold text-gray-900">{snap?.name || "Client"}</p>
+              {snap?.email && <p className="text-xs text-gray-500 mt-0.5">{snap.email}</p>}
+              {snap?.phone && <p className="text-xs text-gray-500">{snap.phone}</p>}
+              {snap?.address && <p className="text-xs text-gray-500">{snap.address}</p>}
+            </div>
+          </div>
+
+          {/* Line items */}
+          <div className="px-4 sm:px-8 py-5 overflow-x-auto">
+            <div style={{ minWidth: "380px" }}>
+              <div className="flex text-[9px] font-bold uppercase tracking-wider text-white rounded-t-md px-3 py-2" style={{ background: brand }}>
+                <div className="flex-1">Item Description</div>
+                <div className="w-20 text-right">Unit Price</div>
+                <div className="w-12 text-center">Qty</div>
+                <div className="w-24 text-right">Total</div>
+              </div>
+              {items.map((item, i) => (
+                <div key={i} className="flex items-start px-3 py-3 border-b border-gray-50 text-sm">
+                  <div className="flex-1 font-medium text-gray-800">{item.description}</div>
+                  <div className="w-20 text-right text-gray-600">{fmt(item.unit_price, sym)}</div>
+                  <div className="w-12 text-center text-gray-500">{item.quantity}</div>
+                  <div className="w-24 text-right font-semibold text-gray-900">{fmt(item.total, sym)}</div>
+                </div>
+              ))}
+
+              {/* Totals */}
+              <div className="flex justify-end mt-4">
+                <div className="w-56 space-y-1.5 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Subtotal</span>
+                    <span className="font-medium text-gray-700">{fmt(Number(invoice.subtotal), sym)}</span>
+                  </div>
+                  {invoice.vat_enabled && (
+                    <div className="flex justify-between text-gray-500">
+                      <span>VAT (7.5%)</span>
+                      <span className="font-medium text-gray-700">{fmt(Number(invoice.vat_amount), sym)}</span>
+                    </div>
+                  )}
+                  {invoice.status === "part_payment" && Number(invoice.deposit_paid) > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Deposit paid</span>
+                      <span className="font-medium">− {fmt(Number(invoice.deposit_paid), sym)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total due bar */}
+          <div className="mx-4 sm:mx-8 mb-4 px-4 py-3 rounded-lg flex items-center justify-between" style={{ background: brand }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-white">Total Due</span>
+            <span className="text-lg font-black text-white">{fmt(Number(invoice.balance_due), sym)}</span>
+          </div>
+
+          {/* Status */}
+          <div className="mx-4 sm:mx-8 mb-4">
+            <span
+              className="inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{ background: status.bg, color: status.text, border: `1px solid ${status.border}` }}
+            >
+              {status.label}
+            </span>
+          </div>
+
+          <p className="mx-4 sm:mx-8 mb-6 font-bold text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+            Thank you for your business
+          </p>
+
+          {/* Footer: 3 columns */}
+          <div className="grid grid-cols-3 gap-4 border-t border-gray-100 px-4 sm:px-8 py-5">
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Questions?</p>
+              {profile?.phone && <p className="text-xs text-gray-600">{profile.phone}</p>}
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Payment Info</p>
+              {profile?.bank_name && <p className="text-xs text-gray-600">{profile.bank_name}</p>}
+              {profile?.account_number && <p className="text-xs text-gray-600">{profile.account_number}</p>}
+              {profile?.account_name && <p className="text-xs text-gray-600">{profile.account_name}</p>}
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-2">Terms &amp; Conditions</p>
+              <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{invoice.notes || "—"}</p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-black/30 pb-4">
+          Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ReceiptDotLeader({ left, right }: { left: React.ReactNode; right: React.ReactNode }) {
+  return (
+    <div className="flex items-end py-1">
+      <span className="flex-shrink-0">{left}</span>
+      <span className="flex-1 mx-1 mb-0.5 border-b border-dotted border-black/30" />
+      <span className="flex-shrink-0">{right}</span>
+    </div>
+  );
+}
+
+function ReceiptPublicView({
+  invoice,
+  profile,
+  copied,
+  onCopyLink,
+}: {
+  invoice: Invoice;
+  profile: Profile;
+  copied: boolean;
+  onCopyLink: () => void;
+}) {
+  const sym = CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ?? invoice.currency;
+  const items = invoice.line_items as LineItem[];
+  const snap = invoice.client_snapshot as { name?: string };
+  const status = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.unpaid;
+  const brand = profile?.brand_colour ?? "#b91c1c";
+
+  return (
+    <div className="min-h-screen" style={{ background: "#f5f5f0" }}>
+      {/* ── TOP BAR (hidden on print) ── */}
+      <div className="no-print sticky top-0 z-30 border-b border-black/10 bg-white/90 backdrop-blur">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-black uppercase text-sm" style={{ color: brand }}>Bill Am</span>
+            <span className="text-black/20 mx-1">·</span>
+            <span className="text-sm text-black/50 hidden sm:block">Invoice #{invoice.invoice_number}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={onCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-black/15 hover:bg-black/5 transition-colors bg-white">
+              {copied ? <><Check size={12} style={{ color: brand }} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+              style={{ background: brand }}
+            >
+              <Download size={12} /> Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Brand-colour stage */}
+      <div className="flex items-start justify-center px-4 py-10 sm:py-14" style={{ background: brand }}>
+        <div
+          className="w-full max-w-sm px-6 py-7 shadow-xl"
+          style={{ background: "#f7f3ea", fontFamily: "'Courier New', Courier, monospace", color: "#2a2a2a" }}
+        >
+          {/* Top row */}
+          <div className="flex justify-between items-start">
+            <div className="font-bold text-sm tracking-wide" style={{ color: brand }}>RECEIPT</div>
+            <div className="font-bold text-sm">No. {invoice.invoice_number}</div>
+          </div>
+
+          {/* Business identity */}
+          <div className="text-center my-5">
+            <div className="text-3xl leading-none" style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive", color: brand }}>
+              {profile?.business_name || "Business"}
+            </div>
+            {profile?.business_tagline && (
+              <div className="text-[9px] tracking-[2px] uppercase text-gray-600 mt-2">{profile.business_tagline}</div>
+            )}
+          </div>
+
+          <div className="border-t border-dashed border-black/40 my-2.5" />
+          <div className="text-center text-xs tracking-wide">DATE: {formatDate(invoice.invoice_date)}</div>
+          <div className="border-t border-dashed border-black/40 my-2.5" />
+
+          {snap?.name && (
+            <div className="text-xs mb-2">
+              <span className="text-gray-500">Billed to: </span>
+              <strong>{snap.name}</strong>
+            </div>
+          )}
+
+          {/* Items */}
+          {items.map((item, i) => (
+            <div key={i} className="mb-1.5">
+              <div className="font-bold text-sm">{item.description}</div>
+              <ReceiptDotLeader
+                left={<span className="text-gray-600 text-xs">{item.quantity} × {fmt(item.unit_price, sym)}</span>}
+                right={<strong className="text-sm">{fmt(item.total, sym)}</strong>}
+              />
+            </div>
+          ))}
+
+          <div className="border-t border-dashed border-black/40 my-3" />
+
+          <ReceiptDotLeader left="Subtotal" right={fmt(Number(invoice.subtotal), sym)} />
+          {invoice.vat_enabled && <ReceiptDotLeader left="VAT (7.5%)" right={fmt(Number(invoice.vat_amount), sym)} />}
+          {invoice.status === "part_payment" && Number(invoice.deposit_paid) > 0 && (
+            <ReceiptDotLeader left="Deposit Paid" right={`− ${fmt(Number(invoice.deposit_paid), sym)}`} />
+          )}
+
+          <div className="border-t border-dashed border-black/40 my-2.5" />
+
+          <div className="flex justify-between items-baseline">
+            <span className="font-bold text-base tracking-wide">TOTAL:</span>
+            <span className="font-bold text-xl">{fmt(Number(invoice.balance_due), sym)}</span>
+          </div>
+
+          <div
+            className="my-4 h-9"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, #222 0px, #222 2px, transparent 2px, transparent 4px, #222 4px, #222 5px, transparent 5px, transparent 8px)",
+            }}
+          />
+
+          <span
+            className="inline-block text-[10px] font-bold tracking-wide px-2.5 py-1 rounded"
+            style={{ background: status.bg, color: status.text }}
+          >
+            {status.label}
+          </span>
+
+          <div className="text-center mt-4 text-2xl" style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive", color: brand }}>
+            Thank You!
+          </div>
+
+          <div className="flex justify-between text-[9px] text-gray-500 mt-4">
+            {profile?.phone && <span>Tel: {profile.phone}</span>}
+            <span className="uppercase">{(profile?.business_name || "").replace(/\s+/g, "")}</span>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-center text-xs text-black/30 py-4">
+        Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+      </p>
     </div>
   );
 }

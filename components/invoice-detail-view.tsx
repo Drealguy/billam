@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InvoicePreview } from "@/components/invoice-preview";
@@ -63,18 +63,16 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
     depositPaid: Number(invoice.deposit_paid),
     balanceDue: Number(invoice.balance_due),
     notes: invoice.notes ?? "",
+    template: invoice.template,
   };
 
-  const publicLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/i/${invoice.id}`
-      : `/i/${invoice.id}`;
+  const [publicLink, setPublicLink] = useState(`/i/${invoice.id}`);
+  useEffect(() => {
+    setPublicLink(`${window.location.origin}/i/${invoice.id}`);
+  }, [invoice.id]);
 
   const handleCopyLink = async () => {
-    const url =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/i/${invoice.id}`
-        : "";
+    const url = `${window.location.origin}/i/${invoice.id}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);

@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, Plus, Trash2 } from "lucide-react";
-import type { Profile, Client, LineItem, Invoice } from "@/types";
+import type { Profile, Client, LineItem, Invoice, InvoiceTemplate } from "@/types";
 import { CURRENCY_SYMBOLS, VAT_RATE } from "@/types";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { createClient } from "@/lib/supabase";
@@ -69,6 +69,40 @@ function Collapsible({ title, icon, open, onToggle, children }: {
   );
 }
 
+const TEMPLATE_OPTIONS: { value: InvoiceTemplate; label: string }[] = [
+  { value: "classic", label: "Classic" },
+  { value: "clean", label: "Clean" },
+  { value: "modern", label: "Modern" },
+  { value: "studio", label: "Studio" },
+];
+
+function TemplatePicker({
+  value,
+  onChange,
+}: {
+  value: InvoiceTemplate;
+  onChange: (t: InvoiceTemplate) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {TEMPLATE_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`py-2 text-[10px] font-semibold rounded-md border transition-colors ${
+            value === opt.value
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -109,6 +143,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
   const [vatEnabled,   setVatEnabled]   = useState(invoice.vat_enabled);
   const [status,       setStatus]       = useState<"unpaid" | "part_payment" | "paid">(invoice.status);
   const [depositPaid,  setDepositPaid]  = useState(Number(invoice.deposit_paid));
+  const [template,     setTemplate]     = useState<InvoiceTemplate>(invoice.template);
 
   // Calculations
   const subtotal   = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
@@ -166,6 +201,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
         deposit_paid: status === "part_payment" ? depositPaid : 0,
         balance_due: balanceDue,
         status,
+        template,
         invoice_date: invoiceDate,
         project_title: projectTitle || null,
         due_date: dueDate || null,
@@ -184,7 +220,7 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
     profile, invoiceNumber, invoiceDate, dueDate, projectTitle,
     clientName, clientEmail, clientPhone, clientAddress,
     items: items.map(i => ({ description: i.description, details: i.details, quantity: i.quantity, unit_price: i.unit_price, total: i.quantity * i.unit_price })),
-    currency, sym, subtotal, vatEnabled, vatAmount, total, status, depositPaid, balanceDue, notes,
+    currency, sym, subtotal, vatEnabled, vatAmount, total, status, depositPaid, balanceDue, notes, template,
   };
 
   return (
@@ -271,6 +307,9 @@ export function InvoiceEditor({ invoice, profile, clients, userId }: Props) {
                 <option value="GBP">GBP £</option>
                 <option value="EUR">EUR €</option>
               </Select>
+            </Field>
+            <Field label="Template">
+              <TemplatePicker value={template} onChange={setTemplate} />
             </Field>
           </Collapsible>
 

@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, Plus, Trash2 } from "lucide-react";
-import type { Profile, Client, LineItem } from "@/types";
+import type { Profile, Client, LineItem, InvoiceTemplate } from "@/types";
 import { CURRENCY_SYMBOLS, VAT_RATE } from "@/types";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { createClient } from "@/lib/supabase";
@@ -59,6 +59,40 @@ function Select({
     >
       {children}
     </select>
+  );
+}
+
+const TEMPLATE_OPTIONS: { value: InvoiceTemplate; label: string }[] = [
+  { value: "classic", label: "Classic" },
+  { value: "clean", label: "Clean" },
+  { value: "modern", label: "Modern" },
+  { value: "studio", label: "Studio" },
+];
+
+function TemplatePicker({
+  value,
+  onChange,
+}: {
+  value: InvoiceTemplate;
+  onChange: (t: InvoiceTemplate) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {TEMPLATE_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`py-2 text-[10px] font-semibold rounded-md border transition-colors ${
+            value === opt.value
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -120,6 +154,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
   const [projectTitle, setProjectTitle] = useState("");
   const [currency, setCurrency] = useState(profile?.default_currency ?? "NGN");
   const [notes, setNotes] = useState("");
+  const [template, setTemplate] = useState<InvoiceTemplate>("classic");
 
   const [items, setItems] = useState<
     { description: string; details: string; quantity: number; unit_price: number }[]
@@ -200,7 +235,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
         deposit_paid: status === "part_payment" ? depositPaid : 0,
         balance_due: balanceDue,
         status,
-        template: "classic",
+        template,
         project_title: projectTitle || null,
         invoice_date: invoiceDate,
         due_date: dueDate || null,
@@ -246,6 +281,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
     depositPaid,
     balanceDue,
     notes,
+    template,
   };
 
   return (
@@ -363,6 +399,9 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
                 <option value="GBP">GBP £</option>
                 <option value="EUR">EUR €</option>
               </Select>
+            </Field>
+            <Field label="Template">
+              <TemplatePicker value={template} onChange={setTemplate} />
             </Field>
           </Collapsible>
 

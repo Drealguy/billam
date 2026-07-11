@@ -1,6 +1,6 @@
 export type Currency = "NGN" | "USD" | "GBP" | "EUR";
 export type InvoiceStatus = "unpaid" | "part_payment" | "paid";
-export type InvoiceTemplate = "classic" | "clean" | "modern";
+export type InvoiceTemplate = "classic" | "clean" | "modern" | "studio";
 
 export interface Profile {
   id: string;
