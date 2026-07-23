@@ -1,4 +1,4 @@
-const CACHE_NAME = "billam-v1";
+const CACHE_NAME = "billam-v2";
 
 const STATIC_ASSETS = [
   "/",
@@ -56,8 +56,13 @@ self.addEventListener("fetch", (event) => {
           if (cached) return cached;
           // Fall back to offline page for navigation requests
           if (event.request.mode === "navigate") {
-            return caches.match("/offline");
+            return caches.match("/offline").then(
+              (offline) => offline || new Response("Offline", { status: 503, statusText: "Offline" })
+            );
           }
+          // Non-navigation request with nothing cached — must still resolve
+          // to a Response, or the browser reports a hard network error.
+          return new Response(null, { status: 504, statusText: "Network error" });
         });
       })
   );
