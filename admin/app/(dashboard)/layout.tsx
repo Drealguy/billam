@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { getAdminContext } from "@/lib/rbac";
-import { Sidebar } from "@/components/sidebar";
+import { DashboardShell } from "@/components/dashboard-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -24,13 +24,12 @@ export default async function AdminDashboardLayout({
   if (!ctx.isAdmin) redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar
-        fullName={ctx.fullName}
-        roles={ctx.roles}
-        permissions={Array.from(ctx.permissions)}
-      />
-      <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
-    </div>
+    <DashboardShell
+      fullName={ctx.fullName}
+      roles={ctx.roles}
+      permissions={Array.from(ctx.permissions)}
+    >
+      {children}
+    </DashboardShell>
   );
 }
