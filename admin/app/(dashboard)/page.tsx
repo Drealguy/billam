@@ -1,5 +1,22 @@
 import { createAdminSupabaseClient } from "@/lib/supabase-admin";
-import { Users, TrendingUp, FileText, UserPlus } from "lucide-react";
+import { listAllAuthUsers, countActiveSince } from "@/lib/auth-users";
+import {
+  Users,
+  UserCheck,
+  Gift,
+  Crown,
+  TrendingUp,
+  BarChart3,
+  FileText,
+  Contact,
+  HardDrive,
+  Sunrise,
+  CalendarDays,
+  Radio,
+  TrendingDown,
+  Percent,
+  UserPlus,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -12,56 +29,33 @@ function fmtNaira(n: number) {
   return `₦${Math.round(n).toLocaleString("en-NG")}`;
 }
 
-export default async function AdminDashboardHome() {
-  const admin = createAdminSupabaseClient();
-
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
-
-  const [
-    { count: totalCustomers },
-    { count: signupsThisWeek },
-    { count: proCount },
-    { data: allSubs },
-    { count: invoicesThisMonth },
-    { data: recentSignups },
-  ] = await Promise.all([
-    admin.from("profiles").select("id", { count: "exact", head: true }),
-    admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", sevenDaysAgo),
-    admin.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "pro"),
-    admin.from("subscriptions").select("status, billing_cycle"),
-    admin.from("invoices").select("id", { count: "exact", head: true }).gte("created_at", startOfMonth),
-    admin
-      .from("profiles")
-      .select("id, full_name, business_name, plan, created_at")
-      .order("created_at", { ascending: false })
-      .limit(6),
-  ]);
-
-  const statusCounts: Record<string, number> = { active: 0, past_due: 0, cancelled: 0, expired: 0, none: 0 };
-  let mrr = 0;
-  for (const s of allSubs ?? []) {
-    statusCounts[s.status] = (statusCounts[s.status] ?? 0) + 1;
-    if (s.status === "active") {
-      mrr += s.billing_cycle === "yearly" ? YEARLY_PRICE_NGN / 12 : MONTHLY_PRICE_NGN;
-    }
+function fmtBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
   }
+  return `${value.toFixed(1)} ${units[unit]}`;
+}
 
-  const cards = [
-    { label: "Total Customers", value: (totalCustomers ?? 0).toLocaleString(), icon: Users, sub: `${signupsThisWeek ?? 0} new this week` },
-    { label: "Pro Subscribers", value: (proCount ?? 0).toLocaleString(), icon: TrendingUp, sub: `${statusCounts.active} active subscriptions` },
-    { label: "Estimated MRR", value: fmtNaira(mrr), icon: TrendingUp, sub: "based on active subscriptions" },
-    { label: "Invoices This Month", value: (invoicesThisMonth ?? 0).toLocaleString(), icon: FileText, sub: "across all customers" },
-  ];
+function fmtPercent(n: number) {
+  return `${n.toFixed(1)}%`;
+}
 
+interface Card {
+  label: string;
+  value: string;
+  icon: typeof Users;
+  sub: string;
+}
+
+function StatGroup({ title, cards }: { title: string; cards: Card[] }) {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-black">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Bill Am platform overview</p>
-      </div>
-
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">{title}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(({ label, value, icon: Icon, sub }) => (
           <div key={label} className="bg-card border border-border rounded-2xl p-5">
@@ -74,6 +68,110 @@ export default async function AdminDashboardHome() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+export default async function AdminDashboardHome() {
+  const admin = createAdminSupabaseClient();
+
+  const now = new Date();
+  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+
+  const [
+    { count: totalUsers },
+    { count: freeUsers },
+    { count: proUsers },
+    { count: dailySignups },
+    { count: weeklySignups },
+    { data: allSubs },
+    { count: invoicesTotal },
+    { count: invoicesThisMonth },
+    { count: clientsTotal },
+    { data: storageBytes },
+    authUsers,
+    { data: recentSignups },
+  ] = await Promise.all([
+    admin.from("profiles").select("id", { count: "exact", head: true }),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "free"),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "pro"),
+    admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", startOfToday),
+    admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", sevenDaysAgo.toISOString()),
+    admin.from("subscriptions").select("status, billing_cycle, updated_at"),
+    admin.from("invoices").select("id", { count: "exact", head: true }),
+    admin.from("invoices").select("id", { count: "exact", head: true }).gte("created_at", startOfMonth),
+    admin.from("clients").select("id", { count: "exact", head: true }),
+    admin.rpc("admin_storage_usage_bytes", { bucket: "logos" }),
+    listAllAuthUsers(admin),
+    admin
+      .from("profiles")
+      .select("id, full_name, business_name, plan, created_at")
+      .order("created_at", { ascending: false })
+      .limit(6),
+  ]);
+
+  const statusCounts: Record<string, number> = { active: 0, past_due: 0, cancelled: 0, expired: 0, none: 0 };
+  let mrr = 0;
+  let churned30d = 0;
+  for (const s of allSubs ?? []) {
+    statusCounts[s.status] = (statusCounts[s.status] ?? 0) + 1;
+    if (s.status === "active") {
+      mrr += s.billing_cycle === "yearly" ? YEARLY_PRICE_NGN / 12 : MONTHLY_PRICE_NGN;
+    }
+    if ((s.status === "cancelled" || s.status === "expired") && s.updated_at >= thirtyDaysAgo.toISOString()) {
+      churned30d += 1;
+    }
+  }
+  const arr = mrr * 12;
+
+  const churnPool = statusCounts.active + churned30d;
+  const churnRate = churnPool > 0 ? (churned30d / churnPool) * 100 : 0;
+  const conversionRate = (totalUsers ?? 0) > 0 ? ((proUsers ?? 0) / (totalUsers ?? 1)) * 100 : 0;
+
+  const activeUsers30d = countActiveSince(authUsers, thirtyDaysAgo);
+  const activeSessions = countActiveSince(authUsers, thirtyMinutesAgo);
+
+  const usersCards: Card[] = [
+    { label: "Total Users", value: (totalUsers ?? 0).toLocaleString(), icon: Users, sub: "all accounts" },
+    { label: "Active Users", value: activeUsers30d.toLocaleString(), icon: UserCheck, sub: "signed in, last 30 days" },
+    { label: "Free Users", value: (freeUsers ?? 0).toLocaleString(), icon: Gift, sub: "on the free plan" },
+    { label: "Pro Users", value: (proUsers ?? 0).toLocaleString(), icon: Crown, sub: `${statusCounts.active} active subscriptions` },
+  ];
+
+  const revenueCards: Card[] = [
+    { label: "Monthly Revenue", value: fmtNaira(mrr), icon: TrendingUp, sub: "MRR, active subscriptions" },
+    { label: "Annual Revenue", value: fmtNaira(arr), icon: BarChart3, sub: "ARR projection (MRR × 12)" },
+  ];
+
+  const activityCards: Card[] = [
+    { label: "Invoice Count", value: (invoicesTotal ?? 0).toLocaleString(), icon: FileText, sub: `${invoicesThisMonth ?? 0} this month` },
+    { label: "Client Count", value: (clientsTotal ?? 0).toLocaleString(), icon: Contact, sub: "across all customers" },
+    { label: "Daily Signups", value: (dailySignups ?? 0).toLocaleString(), icon: Sunrise, sub: "today" },
+    { label: "Weekly Signups", value: (weeklySignups ?? 0).toLocaleString(), icon: CalendarDays, sub: "last 7 days" },
+  ];
+
+  const healthCards: Card[] = [
+    { label: "Active Sessions", value: activeSessions.toLocaleString(), icon: Radio, sub: "signed in, last 30 min" },
+    { label: "Storage Usage", value: fmtBytes(Number(storageBytes ?? 0)), icon: HardDrive, sub: "logo uploads" },
+    { label: "Churn Rate", value: fmtPercent(churnRate), icon: TrendingDown, sub: "cancelled/expired, last 30 days" },
+    { label: "Conversion Rate", value: fmtPercent(conversionRate), icon: Percent, sub: "free → pro, all time" },
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div>
+        <h1 className="text-2xl font-black">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Bill Am platform overview</p>
+      </div>
+
+      <StatGroup title="Users" cards={usersCards} />
+      <StatGroup title="Revenue" cards={revenueCards} />
+      <StatGroup title="Activity" cards={activityCards} />
+      <StatGroup title="Health" cards={healthCards} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Subscription status breakdown */}
