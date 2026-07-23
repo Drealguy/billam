@@ -20,11 +20,18 @@ export default async function AdminDashboardLayout({
   // "is this session actually an active admin" is enforced.
   if (!ctx.isAdmin) redirect("/login");
 
+  const { data: events } = await supabase
+    .from("admin_events")
+    .select("id, title, body, read, created_at")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   return (
     <DashboardShell
       fullName={ctx.fullName}
       roles={ctx.roles}
       permissions={Array.from(ctx.permissions)}
+      events={events ?? []}
     >
       {children}
     </DashboardShell>

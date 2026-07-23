@@ -26,6 +26,13 @@ async function handleChargeSuccess(supabase: SupabaseClient, data: Record<string
   const customer = data.customer as { customer_code?: string } | null;
   const plan = data.plan as { plan_code?: string } | null;
 
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("plan, business_name, full_name, email")
+    .eq("id", userId)
+    .single();
+  const isNewUpgrade = existingProfile?.plan !== "pro";
+
   await supabase
     .from("subscriptions")
     .update({
@@ -43,6 +50,18 @@ async function handleChargeSuccess(supabase: SupabaseClient, data: Record<string
     .eq("user_id", userId);
 
   await supabase.from("profiles").update({ plan: "pro" }).eq("id", userId);
+
+  // Admin-facing event — only for a genuine new upgrade, not renewals.
+  if (isNewUpgrade) {
+    const name = existingProfile?.business_name || existingProfile?.full_name || existingProfile?.email || "A customer";
+    const amount = typeof data.amount === "number" ? data.amount / 100 : null;
+    await supabase.from("admin_events").insert({
+      type: "user_upgraded_pro",
+      title: `${name} upgraded to Pro`,
+      body: `${cycle === "yearly" ? "Yearly" : "Monthly"} plan${amount ? ` — ₦${amount.toLocaleString("en-NG")}` : ""}`,
+      metadata: { user_id: userId, cycle, reference: data.reference ?? null },
+    });
+  }
 }
 
 async function handleSubscriptionCreate(supabase: SupabaseClient, data: Record<string, unknown>) {
