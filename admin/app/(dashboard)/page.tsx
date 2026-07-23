@@ -10,9 +10,6 @@ import {
   FileText,
   Sunrise,
   CalendarDays,
-  Radio,
-  TrendingDown,
-  Percent,
   UserPlus,
 } from "lucide-react";
 
@@ -25,10 +22,6 @@ const YEARLY_PRICE_NGN = 25000;
 
 function fmtNaira(n: number) {
   return `₦${Math.round(n).toLocaleString("en-NG")}`;
-}
-
-function fmtPercent(n: number) {
-  return `${n.toFixed(1)}%`;
 }
 
 interface Card {
@@ -65,7 +58,6 @@ export default async function AdminDashboardHome() {
   const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
   const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 
   const [
@@ -98,24 +90,15 @@ export default async function AdminDashboardHome() {
 
   const statusCounts: Record<string, number> = { active: 0, past_due: 0, cancelled: 0, expired: 0, none: 0 };
   let mrr = 0;
-  let churned30d = 0;
   for (const s of allSubs ?? []) {
     statusCounts[s.status] = (statusCounts[s.status] ?? 0) + 1;
     if (s.status === "active") {
       mrr += s.billing_cycle === "yearly" ? YEARLY_PRICE_NGN / 12 : MONTHLY_PRICE_NGN;
     }
-    if ((s.status === "cancelled" || s.status === "expired") && s.updated_at >= thirtyDaysAgo.toISOString()) {
-      churned30d += 1;
-    }
   }
   const arr = mrr * 12;
 
-  const churnPool = statusCounts.active + churned30d;
-  const churnRate = churnPool > 0 ? (churned30d / churnPool) * 100 : 0;
-  const conversionRate = (totalUsers ?? 0) > 0 ? ((proUsers ?? 0) / (totalUsers ?? 1)) * 100 : 0;
-
   const activeUsers30d = countActiveSince(authUsers, thirtyDaysAgo);
-  const activeSessions = countActiveSince(authUsers, thirtyMinutesAgo);
 
   const usersCards: Card[] = [
     { label: "Total Users", value: (totalUsers ?? 0).toLocaleString(), icon: Users, sub: "all accounts" },
@@ -135,12 +118,6 @@ export default async function AdminDashboardHome() {
     { label: "Weekly Signups", value: (weeklySignups ?? 0).toLocaleString(), icon: CalendarDays, sub: "last 7 days" },
   ];
 
-  const healthCards: Card[] = [
-    { label: "Active Sessions", value: activeSessions.toLocaleString(), icon: Radio, sub: "signed in, last 30 min" },
-    { label: "Churn Rate", value: fmtPercent(churnRate), icon: TrendingDown, sub: "cancelled/expired, last 30 days" },
-    { label: "Conversion Rate", value: fmtPercent(conversionRate), icon: Percent, sub: "free → pro, all time" },
-  ];
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
       <div>
@@ -151,7 +128,6 @@ export default async function AdminDashboardHome() {
       <StatGroup title="Users" cards={usersCards} />
       <StatGroup title="Revenue" cards={revenueCards} />
       <StatGroup title="Activity" cards={activityCards} />
-      <StatGroup title="Health" cards={healthCards} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Subscription status breakdown */}
