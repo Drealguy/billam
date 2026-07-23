@@ -141,7 +141,7 @@ export function PWAInstallBanner() {
               </div>
               <div>
                 <p className="text-white font-black text-sm leading-tight">Bill Am</p>
-                <p className="text-white/60 text-xs">billam.co</p>
+                <p className="text-white/60 text-xs">usebillam.com</p>
               </div>
             </div>
             <button

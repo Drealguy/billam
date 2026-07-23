@@ -8,6 +8,10 @@ import {
   ArrowRight,
   Zap,
   Users,
+  Lock,
+  ShieldCheck,
+  Cloud,
+  Database,
 } from "lucide-react";
 import { NavInstallButton } from "@/components/nav-install-button";
 
@@ -89,7 +93,7 @@ function MockDashboard() {
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
         </div>
         <div className="flex-1 bg-background border border-border rounded-md px-3 py-1 text-[9px] text-muted-foreground text-center">
-          billam.co/dashboard
+          usebillam.com/dashboard
         </div>
       </div>
 
@@ -567,6 +571,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── TRUST ── */}
+      <section id="trust" className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14 scroll-reveal">
+            <SectionLabel>Security</SectionLabel>
+            <h2 className="text-3xl md:text-5xl font-black">
+              Your business data is <span className="text-primary">secure.</span>
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-lg mx-auto">
+              Bill Am is built on modern cloud infrastructure with industry-standard
+              security practices, so you can invoice with confidence.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                icon: Lock,
+                title: "Encrypted Connections",
+                desc: "Every connection to Bill Am uses HTTPS, so data moving between your browser and our servers is encrypted in transit.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Secure Authentication",
+                desc: "Accounts are protected by industry-standard authentication, with passwords stored securely and never in plain text.",
+              },
+              {
+                icon: Cloud,
+                title: "Cloud Infrastructure",
+                desc: "Bill Am runs on established cloud providers trusted by businesses worldwide — not a server under someone's desk.",
+              },
+              {
+                icon: Database,
+                title: "Protected Business Data",
+                desc: "Your invoices, clients, and business details are isolated to your account and never accessible to other users.",
+              },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="scroll-reveal p-6 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all duration-300 group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                  <Icon size={18} className="text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-base mb-2">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground mt-10 max-w-lg mx-auto">
+            We never sell your data. Read our{" "}
+            <Link href="/privacy" className="text-primary font-semibold hover:opacity-80">
+              Privacy Policy
+            </Link>{" "}
+            for the full details.
+          </p>
+        </div>
+      </section>
+
       {/* ── PRICING ── */}
       <section id="pricing" className="py-20 md:py-28 px-5 md:px-10 border-t border-border">
         <div className="max-w-6xl mx-auto">
@@ -709,19 +773,61 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-border py-8 px-5 md:px-10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <span className="font-black uppercase text-primary text-sm">Bill Am</span>
-            <span className="text-xs text-muted-foreground">Built for Nigerian creatives</span>
+      <footer className="border-t border-border py-14 px-5 md:px-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 pb-10">
+            <div className="col-span-2 sm:col-span-1">
+              <span className="font-black uppercase text-primary text-sm">Bill Am</span>
+              <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-[20ch]">
+                Built for Nigerian creatives.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Product
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><Link href="/login" className="hover:text-foreground transition-colors">Log in</Link></li>
+                <li><Link href="/register" className="hover:text-foreground transition-colors">Sign up</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Legal
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link href="/refund-policy" className="hover:text-foreground transition-colors">Refund Policy</Link></li>
+                <li><Link href="/cookies" className="hover:text-foreground transition-colors">Cookie Notice</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Contact
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact us</Link></li>
+                <li>
+                  <a href="mailto:support@usebillam.com" className="hover:text-foreground transition-colors">
+                    support@usebillam.com
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <Link href="/login" className="hover:text-foreground transition-colors">Log in</Link>
-            <Link href="/register" className="hover:text-foreground transition-colors">Sign up</Link>
+
+          <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              © Bill Am {new Date().getFullYear()}. All rights reserved.
+            </p>
+            <p className="text-xs text-muted-foreground">Made for Nigerian creatives 🇳🇬</p>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Bill Am</p>
         </div>
       </footer>
 

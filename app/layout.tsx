@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Bill Am — Invoicing for Nigerian Creatives",
     description: "Create branded invoices and get paid faster. Built for Nigerian creative professionals.",
-    url: "https://billam.co",
+    url: "https://usebillam.com",
     siteName: "Bill Am",
     type: "website",
   },

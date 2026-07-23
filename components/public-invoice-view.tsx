@@ -317,7 +317,7 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
         {/* ── FOOTER ── */}
         {!canRemoveBranding && (
           <p className="text-center text-xs text-black/30 pb-4">
-            Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+            Invoice generated with <span className="font-bold">Bill Am</span> · usebillam.com
           </p>
         )}
       </div>
@@ -500,7 +500,7 @@ function StudioPublicView({
 
         {!canRemoveBranding && (
           <p className="text-center text-xs text-black/30 pb-4">
-            Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+            Invoice generated with <span className="font-bold">Bill Am</span> · usebillam.com
           </p>
         )}
       </div>
@@ -651,7 +651,7 @@ function ReceiptPublicView({
 
       {!canRemoveBranding && (
         <p className="text-center text-xs text-black/30 py-4">
-          Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+          Invoice generated with <span className="font-bold">Bill Am</span> · usebillam.com
         </p>
       )}
     </div>
