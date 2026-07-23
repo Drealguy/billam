@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { initializeSubscriptionTransaction } from "@/lib/paystack";
+import { getPlatformSetting } from "@/lib/platform-settings";
 import type { BillingCycle } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -11,6 +12,14 @@ export async function POST(req: NextRequest) {
 
   if (!user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const proPaymentsEnabled = await getPlatformSetting("pro_payments_enabled", true);
+  if (!proPaymentsEnabled) {
+    return NextResponse.json(
+      { error: "Pro upgrades are temporarily paused. Please check back soon." },
+      { status: 503 }
+    );
   }
 
   const body = await req.json().catch(() => null);
