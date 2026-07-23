@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { notFound, redirect } from "next/navigation";
 import { InvoiceEditor } from "@/components/invoice-editor";
+import { getPlanLimits } from "@/lib/entitlements";
 import type { Invoice, Profile, Client } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +24,15 @@ export default async function EditInvoicePage({
 
   if (!invoice) notFound();
 
+  const plan = (profile as Profile | null)?.plan ?? "free";
+
   return (
     <InvoiceEditor
       invoice={invoice as Invoice}
       profile={profile as Profile}
       clients={(clients ?? []) as Client[]}
       userId={user.id}
+      templates={getPlanLimits(plan).templates}
     />
   );
 }

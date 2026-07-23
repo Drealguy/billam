@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CURRENCY_SYMBOLS } from "@/types";
 import type { Invoice, Profile, LineItem } from "@/types";
 import { Link2, Check, Download, Copy, Building2, Phone, Landmark } from "lucide-react";
+import { getPlanLimits } from "@/lib/entitlements";
 
 interface Props {
   invoice: Invoice;
@@ -31,8 +32,11 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
   const [acctCopied, setAcctCopied] = useState(false);
   const searchParams = useSearchParams();
 
+  const canExportPdf = getPlanLimits(profile?.plan ?? "free").canExportPdf;
+  const canRemoveBranding = getPlanLimits(profile?.plan ?? "free").canRemoveBranding;
+
   useEffect(() => {
-    if (searchParams.get("print") !== "1") return;
+    if (searchParams.get("print") !== "1" || !canExportPdf) return;
 
     let cancelled = false;
 
@@ -71,7 +75,7 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [searchParams]);
+  }, [searchParams, canExportPdf]);
 
   const sym = CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ?? invoice.currency;
   const items = invoice.line_items as LineItem[];
@@ -129,13 +133,15 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
             <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-black/15 hover:bg-black/5 transition-colors bg-white">
               {copied ? <><Check size={12} style={{ color: brand }} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
             </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
-              style={{ background: brand }}
-            >
-              <Download size={12} /> Download PDF
-            </button>
+            {canExportPdf && (
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+                style={{ background: brand }}
+              >
+                <Download size={12} /> Download PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -309,9 +315,11 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
         )}
 
         {/* ── FOOTER ── */}
-        <p className="text-center text-xs text-black/30 pb-4">
-          Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
-        </p>
+        {!canRemoveBranding && (
+          <p className="text-center text-xs text-black/30 pb-4">
+            Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+          </p>
+        )}
       </div>
     </div>
   );
@@ -334,6 +342,8 @@ function StudioPublicView({
   const status = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.unpaid;
   const brand = profile?.brand_colour ?? "#2B52FF";
   const initial = (profile?.business_name || "B").charAt(0).toUpperCase();
+  const canExportPdf = getPlanLimits(profile?.plan ?? "free").canExportPdf;
+  const canRemoveBranding = getPlanLimits(profile?.plan ?? "free").canRemoveBranding;
 
   return (
     <div className="min-h-screen" style={{ background: "#f5f5f0" }}>
@@ -349,13 +359,15 @@ function StudioPublicView({
             <button onClick={onCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-black/15 hover:bg-black/5 transition-colors bg-white">
               {copied ? <><Check size={12} style={{ color: brand }} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
             </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
-              style={{ background: brand }}
-            >
-              <Download size={12} /> Download PDF
-            </button>
+            {canExportPdf && (
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+                style={{ background: brand }}
+              >
+                <Download size={12} /> Download PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -486,9 +498,11 @@ function StudioPublicView({
           </div>
         </div>
 
-        <p className="text-center text-xs text-black/30 pb-4">
-          Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
-        </p>
+        {!canRemoveBranding && (
+          <p className="text-center text-xs text-black/30 pb-4">
+            Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+          </p>
+        )}
       </div>
     </div>
   );
@@ -520,6 +534,8 @@ function ReceiptPublicView({
   const snap = invoice.client_snapshot as { name?: string };
   const status = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.unpaid;
   const brand = profile?.brand_colour ?? "#b91c1c";
+  const canExportPdf = getPlanLimits(profile?.plan ?? "free").canExportPdf;
+  const canRemoveBranding = getPlanLimits(profile?.plan ?? "free").canRemoveBranding;
 
   return (
     <div className="min-h-screen" style={{ background: "#f5f5f0" }}>
@@ -535,13 +551,15 @@ function ReceiptPublicView({
             <button onClick={onCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-black/15 hover:bg-black/5 transition-colors bg-white">
               {copied ? <><Check size={12} style={{ color: brand }} /> Copied!</> : <><Link2 size={12} /> Copy link</>}
             </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
-              style={{ background: brand }}
-            >
-              <Download size={12} /> Download PDF
-            </button>
+            {canExportPdf && (
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+                style={{ background: brand }}
+              >
+                <Download size={12} /> Download PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -631,9 +649,11 @@ function ReceiptPublicView({
         </div>
       </div>
 
-      <p className="text-center text-xs text-black/30 py-4">
-        Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
-      </p>
+      {!canRemoveBranding && (
+        <p className="text-center text-xs text-black/30 py-4">
+          Invoice generated with <span className="font-bold">Bill Am</span> · billam.co
+        </p>
+      )}
     </div>
   );
 }

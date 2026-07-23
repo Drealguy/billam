@@ -1,6 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { InvoiceBuilder } from "@/components/invoice-builder";
+import { LimitReached } from "@/components/limit-reached";
+import { getMonthlyInvoiceCount, isAtInvoiceLimit, getPlanLimits } from "@/lib/entitlements";
 import type { Profile, Client } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +40,19 @@ export default async function NewInvoicePage({
     }
   }
 
+  const plan = (profile as Profile | null)?.plan ?? "free";
+  const invoicesThisMonth = await getMonthlyInvoiceCount(supabase, user.id);
+
+  if (isAtInvoiceLimit(plan, invoicesThisMonth)) {
+    return (
+      <LimitReached
+        reason="invoices"
+        title="You've used all 5 free invoices this month"
+        message="Your invoice count resets on the 1st, or upgrade now for unlimited invoices right away."
+      />
+    );
+  }
+
   return (
     <InvoiceBuilder
       profile={profile as Profile}
@@ -45,6 +60,7 @@ export default async function NewInvoicePage({
       defaultInvoiceNumber={nextNumber}
       userId={user.id}
       preselectedClientId={preselectedClientId}
+      templates={getPlanLimits(plan).templates}
     />
   );
 }

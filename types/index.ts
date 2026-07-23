@@ -77,6 +77,29 @@ export interface Notification {
   created_at: string;
 }
 
+export type PlanTier = "free" | "pro";
+export type BillingCycle = "monthly" | "yearly";
+export type SubscriptionStatus = "none" | "active" | "past_due" | "cancelled" | "expired";
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan: PlanTier;
+  billing_cycle: BillingCycle | null;
+  status: SubscriptionStatus;
+  paystack_customer_code: string | null;
+  paystack_subscription_code: string | null;
+  paystack_email_token: string | null;
+  paystack_plan_code: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  last_payment_reference: string | null;
+  last_payment_amount: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   NGN: "₦",
   USD: "$",

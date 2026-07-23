@@ -3,11 +3,12 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronUp, ChevronDown, Plus, Trash2 } from "lucide-react";
+import { ChevronUp, ChevronDown, Plus, Trash2, Lock } from "lucide-react";
 import type { Profile, Client, LineItem, InvoiceTemplate } from "@/types";
 import { CURRENCY_SYMBOLS, VAT_RATE } from "@/types";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { createClient } from "@/lib/supabase";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface Props {
   profile: Profile;
@@ -15,6 +16,7 @@ interface Props {
   defaultInvoiceNumber: string;
   userId: string;
   preselectedClientId?: string;
+  templates: InvoiceTemplate[];
 }
 
 type Section = "client" | "info" | "items" | "payment";
@@ -72,26 +74,36 @@ const TEMPLATE_OPTIONS: { value: InvoiceTemplate; label: string }[] = [
 function TemplatePicker({
   value,
   onChange,
+  allowed,
+  onLockedClick,
 }: {
   value: InvoiceTemplate;
   onChange: (t: InvoiceTemplate) => void;
+  allowed: InvoiceTemplate[];
+  onLockedClick: () => void;
 }) {
   return (
     <div className="grid grid-cols-4 gap-2">
-      {TEMPLATE_OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={`py-2 text-[10px] font-semibold rounded-md border transition-colors ${
-            value === opt.value
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border text-muted-foreground hover:bg-secondary"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
+      {TEMPLATE_OPTIONS.map((opt) => {
+        const isAllowed = allowed.includes(opt.value);
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => (isAllowed ? onChange(opt.value) : onLockedClick())}
+            className={`py-2 text-[10px] font-semibold rounded-md border transition-colors flex items-center justify-center gap-1 ${
+              value === opt.value
+                ? "border-primary bg-primary/10 text-primary"
+                : isAllowed
+                ? "border-border text-muted-foreground hover:bg-secondary"
+                : "border-border text-muted-foreground/40 hover:bg-secondary/50"
+            }`}
+          >
+            {!isAllowed && <Lock size={9} />}
+            {opt.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -126,9 +138,10 @@ function Collapsible({
   );
 }
 
-export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId }: Props) {
+export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId, preselectedClientId, templates }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [open, setOpen] = useState<Record<Section, boolean>>({
     client: true,
     info: true,
@@ -401,7 +414,12 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
               </Select>
             </Field>
             <Field label="Template">
-              <TemplatePicker value={template} onChange={setTemplate} />
+              <TemplatePicker
+                value={template}
+                onChange={setTemplate}
+                allowed={templates}
+                onLockedClick={() => setShowUpgrade(true)}
+              />
             </Field>
           </Collapsible>
 
@@ -526,6 +544,8 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
           </div>
         </div>
       </div>
+
+      {showUpgrade && <UpgradeModal reason="template" onClose={() => setShowUpgrade(false)} />}
     </div>
   );
 }

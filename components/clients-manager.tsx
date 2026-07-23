@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import type { Client } from "@/types";
-import { Plus, Users, Pencil, Trash2, X, Check, Loader2, Mail, Phone, MapPin, FileText } from "lucide-react";
+import { Plus, Users, Pencil, Trash2, X, Check, Loader2, Mail, Phone, MapPin, FileText, Lock } from "lucide-react";
 import Link from "next/link";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface Props {
   clients: Client[];
   userId: string;
+  maxClients: number | null;
 }
 
 const EMPTY: Omit<Client, "id" | "user_id" | "created_at"> = {
@@ -103,7 +105,7 @@ function ClientForm({
   );
 }
 
-export function ClientsManager({ clients: initial, userId }: Props) {
+export function ClientsManager({ clients: initial, userId, maxClients }: Props) {
   const router = useRouter();
   const [clients, setClients] = useState(initial);
   const [showAdd, setShowAdd] = useState(false);
@@ -111,6 +113,9 @@ export function ClientsManager({ clients: initial, userId }: Props) {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const atLimit = maxClients !== null && clients.length >= maxClients;
 
   const filtered = clients.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -176,10 +181,14 @@ export function ClientsManager({ clients: initial, userId }: Props) {
         </div>
         {!showAdd && (
           <button
-            onClick={() => { setShowAdd(true); setEditingId(null); }}
+            onClick={() => {
+              if (atLimit) { setShowUpgrade(true); return; }
+              setShowAdd(true);
+              setEditingId(null);
+            }}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
           >
-            <Plus size={15} /> Add Client
+            {atLimit ? <Lock size={14} /> : <Plus size={15} />} Add Client
           </button>
         )}
       </div>
@@ -214,7 +223,7 @@ export function ClientsManager({ clients: initial, userId }: Props) {
             Add your clients once and reuse them across all invoices.
           </p>
           <button
-            onClick={() => setShowAdd(true)}
+            onClick={() => (atLimit ? setShowUpgrade(true) : setShowAdd(true))}
             className="px-5 py-2.5 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:opacity-90 transition-opacity"
           >
             + Add your first client
@@ -305,6 +314,8 @@ export function ClientsManager({ clients: initial, userId }: Props) {
           No clients match &ldquo;{search}&rdquo;
         </p>
       )}
+
+      {showUpgrade && <UpgradeModal reason="clients" onClose={() => setShowUpgrade(false)} />}
     </div>
   );
 }

@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { CURRENCY_SYMBOLS } from "@/types";
 import type { Invoice, Profile, LineItem } from "@/types";
-import { ArrowLeft, Link2, Download, Pencil, Trash2, Check } from "lucide-react";
+import { ArrowLeft, Link2, Download, Pencil, Trash2, Check, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { UpgradeModal } from "@/components/upgrade-modal";
+import { getPlanLimits } from "@/lib/entitlements";
 
 interface Props {
   invoice: Invoice;
@@ -29,6 +31,8 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const canExportPdf = getPlanLimits(profile?.plan ?? "free").canExportPdf;
 
   const sym =
     CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ??
@@ -79,6 +83,10 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
   };
 
   const handleDownloadPDF = () => {
+    if (!canExportPdf) {
+      setShowUpgrade(true);
+      return;
+    }
     const url = `/i/${invoice.id}?print=1`;
     const win = window.open(url, "_blank");
     // window.open can silently return null (popup blocked, or running as an
@@ -133,7 +141,7 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
             onClick={handleDownloadPDF}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-border rounded-lg hover:bg-secondary transition-colors"
           >
-            <Download size={13} /> Download PDF
+            {canExportPdf ? <Download size={13} /> : <Lock size={12} />} Download PDF
           </button>
           <Link
             href={`/invoices/${invoice.id}/edit`}
@@ -170,6 +178,8 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
       <div className="flex justify-center overflow-x-auto pb-4">
         <InvoicePreview data={previewData} />
       </div>
+
+      {showUpgrade && <UpgradeModal reason="pdf" onClose={() => setShowUpgrade(false)} />}
     </div>
   );
 }

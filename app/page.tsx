@@ -578,7 +578,7 @@ export default function LandingPage() {
             <p className="mt-4 text-muted-foreground">Start free. Upgrade when you&apos;re ready. No surprises.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
 
             {/* Free */}
             <div className="scroll-reveal p-8 rounded-2xl border border-border bg-card flex flex-col hover:shadow-md transition-shadow duration-300">
@@ -590,13 +590,10 @@ export default function LandingPage() {
 
               <div className="space-y-3 flex-1">
                 {[
-                  "5 invoices to get started",
-                  "3 invoice templates",
-                  "PDF downloads",
-                  "Client address book",
-                  "VAT calculation",
-                  "Multi-currency support",
-                  "Custom brand colours & logo",
+                  "5 invoices per month",
+                  "5 clients",
+                  "Classic template",
+                  "Bill Am branding",
                 ].map((f) => (
                   <div key={f} className="flex items-center gap-3 text-sm">
                     <CheckCircle size={14} className="text-muted-foreground flex-shrink-0" />
@@ -613,26 +610,55 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Pro */}
-            <div className="scroll-reveal p-8 rounded-2xl border-2 border-primary bg-card flex flex-col relative overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute top-5 right-5 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wider">
-                Most popular
-              </div>
-
+            {/* Pro Monthly */}
+            <div className="scroll-reveal p-8 rounded-2xl border border-border bg-card flex flex-col hover:shadow-md transition-shadow duration-300">
               <div className="mb-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Pro</p>
-                <div className="text-5xl font-black">₦10,000</div>
-                <div className="text-muted-foreground text-sm mt-1">per year — less than ₦834/month</div>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Pro Monthly</p>
+                <div className="text-5xl font-black">₦2,500</div>
+                <div className="text-muted-foreground text-sm mt-1">per month</div>
               </div>
 
               <div className="space-y-3 flex-1">
                 {[
                   "Unlimited invoices",
-                  "Everything in Free",
-                  "Edit invoices anytime",
-                  "All templates & full branding",
-                  "Client portal with payment info",
+                  "Unlimited clients",
+                  "All invoice templates",
+                  "Custom branding",
+                  "PDF export",
+                  "Payment status tracking",
+                ].map((f) => (
+                  <div key={f} className="flex items-center gap-3 text-sm">
+                    <CheckCircle size={14} className="text-muted-foreground flex-shrink-0" />
+                    <span className="text-foreground">{f}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/register"
+                className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 text-sm font-bold text-foreground border border-border rounded-xl hover:bg-secondary transition-colors"
+              >
+                Get Pro Monthly <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* Pro Yearly */}
+            <div className="scroll-reveal p-8 rounded-2xl border-2 border-primary bg-card flex flex-col relative overflow-hidden hover:shadow-xl transition-shadow duration-300">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute top-5 right-5 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wider">
+                Save ₦5,000
+              </div>
+
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Pro Yearly</p>
+                <div className="text-5xl font-black">₦25,000</div>
+                <div className="text-muted-foreground text-sm mt-1">per year — less than ₦2,084/month</div>
+              </div>
+
+              <div className="space-y-3 flex-1">
+                {[
+                  "Everything in Pro Monthly",
+                  "2 months free vs. monthly",
                   "Priority support",
                   "Contract generation (coming soon)",
                 ].map((f) => (
@@ -649,7 +675,7 @@ export default function LandingPage() {
                 href="/register"
                 className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity"
               >
-                Get Pro — ₦10,000/yr <ArrowRight size={15} />
+                Get Pro Yearly <ArrowRight size={15} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
                 Secure payment via Paystack

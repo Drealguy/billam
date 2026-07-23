@@ -1,8 +1,10 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import { CURRENCY_SYMBOLS, type Invoice, type Profile } from "@/types";
+import { CURRENCY_SYMBOLS, type Invoice, type Profile, type Subscription } from "@/types";
 import Link from "next/link";
 import { FileText, ArrowRight, CheckCircle2, Circle, TrendingUp, Wallet, Clock, Send } from "lucide-react";
+import { SubscriptionCard } from "@/components/subscription-card";
+import { getPlanLimits, getClientCount } from "@/lib/entitlements";
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +29,18 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: allInvoices }] = await Promise.all([
+  const [{ data: profile }, { data: allInvoices }, { data: subscription }, clientCount] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("invoices").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+    supabase.from("subscriptions").select("*").eq("user_id", user.id).single(),
+    getClientCount(supabase, user.id),
   ]);
 
   const p = profile as Profile | null;
   const invoices = (allInvoices ?? []) as Invoice[];
+  const sub = subscription as Subscription | null;
+  const plan = p?.plan ?? "free";
+  const limits = getPlanLimits(plan);
   const firstName = p?.full_name?.split(" ")[0] ?? "there";
   const currency = p?.default_currency ?? "NGN";
 
@@ -91,6 +98,18 @@ export default async function DashboardPage() {
           <Send size={14} /> New Invoice
         </Link>
       </div>
+
+      {/* Subscription */}
+      <SubscriptionCard
+        plan={plan}
+        billingCycle={sub?.billing_cycle ?? null}
+        currentPeriodEnd={sub?.current_period_end ?? null}
+        cancelAtPeriodEnd={sub?.cancel_at_period_end ?? false}
+        invoicesThisMonth={thisMonth.length}
+        maxInvoicesPerMonth={limits.maxInvoicesPerMonth}
+        clientCount={clientCount}
+        maxClients={limits.maxClients}
+      />
 
       {/* Onboarding checklist */}
       {!onboardingComplete && (
