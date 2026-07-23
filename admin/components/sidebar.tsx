@@ -34,6 +34,19 @@ interface Props {
   permissions: string[];
 }
 
+function Initials({ name }: { name: string }) {
+  const parts = name.trim().split(" ").filter(Boolean);
+  const letters =
+    parts.length >= 2
+      ? parts[0][0] + parts[parts.length - 1][0]
+      : (parts[0] ?? "A").slice(0, 2);
+  return (
+    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+      <span className="text-sm font-black text-primary-foreground uppercase">{letters}</span>
+    </div>
+  );
+}
+
 export function Sidebar({ fullName, roles, permissions }: Props) {
   const pathname = usePathname();
   const router = useRouter();
@@ -57,11 +70,20 @@ export function Sidebar({ fullName, roles, permissions }: Props) {
         </span>
       </div>
 
-      <div className="px-4 py-4 border-b border-border flex-shrink-0">
-        <p className="text-sm font-bold truncate">{fullName || "Admin"}</p>
-        <p className="text-xs text-muted-foreground truncate mt-0.5 capitalize">
-          {roles.join(", ") || "No role assigned"}
-        </p>
+      <div className="px-4 py-5 border-b border-border flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Initials name={fullName || "Admin"} />
+          <div className="min-w-0">
+            <p className="text-sm font-bold truncate leading-tight">{fullName || "Admin"}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5 capitalize">
+              {roles.join(", ") || "No role assigned"}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+              <span className="text-[10px] text-primary font-semibold">Active</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5 scrollbar-none">
@@ -71,7 +93,7 @@ export function Sidebar({ fullName, roles, permissions }: Props) {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer select-none transition-colors active:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                 active
                   ? "bg-primary/15 text-primary"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -87,7 +109,7 @@ export function Sidebar({ fullName, roles, permissions }: Props) {
       <div className="px-3 py-4 border-t border-border flex-shrink-0">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground cursor-pointer select-none transition-colors hover:bg-destructive/10 hover:text-destructive active:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
         >
           <LogOut size={16} strokeWidth={1.8} />
           Log out
