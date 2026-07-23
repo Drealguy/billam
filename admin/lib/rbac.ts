@@ -24,37 +24,40 @@ export const EMPTY_ADMIN_CONTEXT: AdminContext = {
  * nothing checks role names directly, so adding a role or permission
  * later never requires touching call sites.
  */
+type AdminUserRow = {
+  id: string;
+  full_name: string;
+  is_active: boolean;
+  admin_user_roles: {
+    admin_roles: {
+      name: string;
+      admin_role_permissions: { admin_permissions: { key: string } | null }[];
+    } | null;
+  }[];
+};
+
 export const getAdminContext = cache(async function getAdminContext(
   supabase: SupabaseClient,
   userId: string
 ): Promise<AdminContext> {
-  const { data: adminUser } = await supabase
+  // One nested query instead of two sequential round trips —
+  // admin_users, its roles, and each role's permissions all come back
+  // together via PostgREST's embedding.
+  const { data } = await supabase
     .from("admin_users")
-    .select("id, full_name, is_active")
+    .select("id, full_name, is_active, admin_user_roles(admin_roles(name, admin_role_permissions(admin_permissions(key))))")
     .eq("id", userId)
     .single();
+
+  const adminUser = data as unknown as AdminUserRow | null;
 
   if (!adminUser || !adminUser.is_active) {
     return EMPTY_ADMIN_CONTEXT;
   }
 
-  // One nested query instead of two sequential round trips: roles and
-  // their permissions come back together via PostgREST's embedding.
-  const { data: userRoles } = await supabase
-    .from("admin_user_roles")
-    .select("admin_roles(name, admin_role_permissions(admin_permissions(key)))")
-    .eq("user_id", userId);
-
-  type RoleRow = {
-    admin_roles: {
-      name: string;
-      admin_role_permissions: { admin_permissions: { key: string } | null }[];
-    } | null;
-  };
-
   const roles: string[] = [];
   const permissions = new Set<string>();
-  for (const row of (userRoles ?? []) as unknown as RoleRow[]) {
+  for (const row of adminUser.admin_user_roles ?? []) {
     const role = row.admin_roles;
     if (!role) continue;
     roles.push(role.name);
