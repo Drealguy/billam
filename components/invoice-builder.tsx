@@ -337,7 +337,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
       {/* Body: form | preview */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
         {/* Form panel */}
-        <div className="w-full md:w-80 lg:w-96 flex-shrink-0 overflow-y-auto px-4 py-5 space-y-3 border-r border-border scrollbar-none">
+        <div className="w-full xl:w-80 2xl:w-96 flex-shrink-0 overflow-y-auto px-4 py-5 space-y-3 border-r border-border scrollbar-none">
 
           {/* Client */}
           <Collapsible title="Client Details" icon="🧑" open={open.client} onToggle={() => toggle("client")}>
@@ -535,7 +535,7 @@ export function InvoiceBuilder({ profile, clients, defaultInvoiceNumber, userId,
         </div>
 
         {/* Preview panel */}
-        <div className="hidden md:flex flex-1 flex-col overflow-y-auto bg-muted/20 px-8 py-6 scrollbar-none">
+        <div className="hidden xl:flex flex-1 flex-col overflow-y-auto overflow-x-auto bg-muted/20 px-8 py-6 scrollbar-none">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-5">
             Live Preview
           </p>

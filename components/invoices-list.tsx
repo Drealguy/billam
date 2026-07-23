@@ -37,16 +37,36 @@ interface Props {
   defaultCurrency: string;
 }
 
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function monthKey(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(key: string) {
+  const [year, month] = key.split("-").map(Number);
+  return `${MONTH_NAMES[month - 1]} ${year}`;
+}
+
 export function InvoicesList({ invoices, defaultCurrency }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("All");
+  const [monthFilter, setMonthFilter] = useState<string>("All");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const filtered = filter === "All"
+  const monthOptions = Array.from(new Set(invoices.map(i => monthKey(i.invoice_date))))
+    .sort((a, b) => b.localeCompare(a));
+
+  const byMonth = monthFilter === "All"
     ? invoices
-    : invoices.filter(i => STATUS_MAP[i.status] === filter);
+    : invoices.filter(i => monthKey(i.invoice_date) === monthFilter);
+
+  const filtered = filter === "All"
+    ? byMonth
+    : byMonth.filter(i => STATUS_MAP[i.status] === filter);
 
   const totalBilled = filtered.reduce((s, i) => s + Number(i.total), 0);
 
@@ -116,28 +136,43 @@ export function InvoicesList({ invoices, defaultCurrency }: Props) {
         </Link>
       </div>
 
-      {/* Filter tabs */}
-      <div className="overflow-x-auto pb-0.5">
-        <div className="flex items-center gap-1 p-1 bg-card border border-border rounded-xl w-fit">
-          {FILTERS.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                filter === f
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {f}
-              <span className="ml-1.5 opacity-60">
-                {f === "All"
-                  ? invoices.length
-                  : invoices.filter(i => STATUS_MAP[i.status] === f).length}
-              </span>
-            </button>
-          ))}
+      {/* Filter tabs + month filter */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="overflow-x-auto pb-0.5">
+          <div className="flex items-center gap-1 p-1 bg-card border border-border rounded-xl w-fit">
+            {FILTERS.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                  filter === f
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f}
+                <span className="ml-1.5 opacity-60">
+                  {f === "All"
+                    ? byMonth.length
+                    : byMonth.filter(i => STATUS_MAP[i.status] === f).length}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {monthOptions.length > 0 && (
+          <select
+            value={monthFilter}
+            onChange={e => setMonthFilter(e.target.value)}
+            className="bg-card border border-border rounded-lg px-3 py-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            <option value="All">All months</option>
+            {monthOptions.map(key => (
+              <option key={key} value={key}>{monthLabel(key)}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Summary bar */}
