@@ -37,15 +37,6 @@ export interface Invoice {
   created_at: string;
 }
 
-export interface Client {
-  id: string;
-  user_id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  created_at: string;
-}
-
 export interface LoginEvent {
   id: string;
   user_id: string;

@@ -17,10 +17,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const admin = createAdminSupabaseClient();
 
-  const [{ data: profile }, { data: invoices }, { data: clients }, { data: subscription }] = await Promise.all([
+  const [{ data: profile }, { data: invoices }, { data: subscription }] = await Promise.all([
     admin.from("profiles").select("*").eq("id", id).single(),
     admin.from("invoices").select("*").eq("user_id", id),
-    admin.from("clients").select("*").eq("user_id", id),
     admin.from("subscriptions").select("*").eq("user_id", id).single(),
   ]);
 
@@ -38,7 +37,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     profile,
     subscription: subscription ?? null,
     invoices: invoices ?? [],
-    clients: clients ?? [],
   };
 
   return new NextResponse(JSON.stringify(payload, null, 2), {

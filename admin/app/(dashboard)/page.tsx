@@ -8,8 +8,6 @@ import {
   TrendingUp,
   BarChart3,
   FileText,
-  Contact,
-  HardDrive,
   Sunrise,
   CalendarDays,
   Radio,
@@ -27,18 +25,6 @@ const YEARLY_PRICE_NGN = 25000;
 
 function fmtNaira(n: number) {
   return `₦${Math.round(n).toLocaleString("en-NG")}`;
-}
-
-function fmtBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  const units = ["KB", "MB", "GB", "TB"];
-  let value = bytes / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  return `${value.toFixed(1)} ${units[unit]}`;
 }
 
 function fmtPercent(n: number) {
@@ -91,8 +77,6 @@ export default async function AdminDashboardHome() {
     { data: allSubs },
     { count: invoicesTotal },
     { count: invoicesThisMonth },
-    { count: clientsTotal },
-    { data: storageBytes },
     authUsers,
     { data: recentSignups },
   ] = await Promise.all([
@@ -104,8 +88,6 @@ export default async function AdminDashboardHome() {
     admin.from("subscriptions").select("status, billing_cycle, updated_at"),
     admin.from("invoices").select("id", { count: "exact", head: true }),
     admin.from("invoices").select("id", { count: "exact", head: true }).gte("created_at", startOfMonth),
-    admin.from("clients").select("id", { count: "exact", head: true }),
-    admin.rpc("admin_storage_usage_bytes", { bucket: "logos" }),
     listAllAuthUsers(admin),
     admin
       .from("profiles")
@@ -149,14 +131,12 @@ export default async function AdminDashboardHome() {
 
   const activityCards: Card[] = [
     { label: "Invoice Count", value: (invoicesTotal ?? 0).toLocaleString(), icon: FileText, sub: `${invoicesThisMonth ?? 0} this month` },
-    { label: "Client Count", value: (clientsTotal ?? 0).toLocaleString(), icon: Contact, sub: "across all customers" },
     { label: "Daily Signups", value: (dailySignups ?? 0).toLocaleString(), icon: Sunrise, sub: "today" },
     { label: "Weekly Signups", value: (weeklySignups ?? 0).toLocaleString(), icon: CalendarDays, sub: "last 7 days" },
   ];
 
   const healthCards: Card[] = [
     { label: "Active Sessions", value: activeSessions.toLocaleString(), icon: Radio, sub: "signed in, last 30 min" },
-    { label: "Storage Usage", value: fmtBytes(Number(storageBytes ?? 0)), icon: HardDrive, sub: "logo uploads" },
     { label: "Churn Rate", value: fmtPercent(churnRate), icon: TrendingDown, sub: "cancelled/expired, last 30 days" },
     { label: "Conversion Rate", value: fmtPercent(conversionRate), icon: Percent, sub: "free → pro, all time" },
   ];

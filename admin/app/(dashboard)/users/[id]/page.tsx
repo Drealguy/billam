@@ -6,7 +6,7 @@ import { getAdminContext, hasPermission } from "@/lib/rbac";
 import { AccessRestricted } from "@/components/access-restricted";
 import { updateAccountStatus, setUserPlan, verifyUserEmail, resetOnboarding } from "./actions";
 import { CURRENCY_SYMBOLS } from "@/types";
-import type { Profile, Invoice, Client, LoginEvent, Subscription } from "@/types";
+import type { Profile, Invoice, LoginEvent, Subscription } from "@/types";
 import { ArrowLeft, Download, Mail, ShieldCheck, RotateCcw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -46,11 +46,10 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const admin = createAdminSupabaseClient();
 
-  const [{ data: profile }, { data: invoices }, { data: clients }, { data: loginEvents }, { data: subscription }, authUser] =
+  const [{ data: profile }, { data: invoices }, { data: loginEvents }, { data: subscription }, authUser] =
     await Promise.all([
       admin.from("profiles").select("*").eq("id", id).single(),
       admin.from("invoices").select("id, invoice_number, client_snapshot, currency, total, status, invoice_date").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
-      admin.from("clients").select("id, name, email, phone, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
       admin.from("login_events").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
       admin.from("subscriptions").select("*").eq("user_id", id).single(),
       admin.auth.admin.getUserById(id),
@@ -200,22 +199,6 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   <p className="text-xs text-muted-foreground">{fmtDate(inv.invoice_date)}</p>
                 </div>
                 <span className="font-bold tabular-nums flex-shrink-0">{fmtMoney(Number(inv.total), inv.currency)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
-
-      {/* Clients */}
-      <Section title={`Clients (${(clients ?? []).length})`}>
-        {(clients ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No clients yet.</p>
-        ) : (
-          <div className="space-y-2">
-            {(clients as Client[]).map((c) => (
-              <div key={c.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border/50 last:border-0">
-                <p className="font-semibold">{c.name}</p>
-                <p className="text-xs text-muted-foreground">{c.email ?? c.phone ?? "—"}</p>
               </div>
             ))}
           </div>
