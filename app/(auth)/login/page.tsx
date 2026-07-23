@@ -80,9 +80,9 @@ function LoginForm() {
       return;
     }
 
-    const logRes = await fetch("/api/auth/log-login", { method: "POST" });
-    if (!logRes.ok) {
-      const body = await logRes.json().catch(() => ({}));
+    const statusRes = await fetch("/api/auth/check-status", { method: "POST" });
+    if (!statusRes.ok) {
+      const body = await statusRes.json().catch(() => ({}));
       await supabase.auth.signOut();
       const params = new URLSearchParams();
       if (body.status) params.set("status", body.status);

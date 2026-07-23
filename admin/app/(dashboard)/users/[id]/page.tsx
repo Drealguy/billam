@@ -5,8 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase-admin";
 import { getAdminContext, hasPermission } from "@/lib/rbac";
 import { AccessRestricted } from "@/components/access-restricted";
 import { updateAccountStatus, setUserPlan, verifyUserEmail, resetOnboarding } from "./actions";
-import { CURRENCY_SYMBOLS } from "@/types";
-import type { Profile, Invoice, LoginEvent, Subscription } from "@/types";
+import type { Profile, Subscription } from "@/types";
 import { ArrowLeft, Download, Mail, ShieldCheck, RotateCcw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -17,11 +16,6 @@ const STATUS_STYLES: Record<string, string> = {
   banned: "bg-destructive/15 text-destructive border-destructive/20",
   deleted: "bg-muted text-muted-foreground border-border",
 };
-
-function fmtMoney(n: number, currency: string) {
-  const sym = CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] ?? currency;
-  return `${sym}${Number(n).toLocaleString("en-NG")}`;
-}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -46,14 +40,11 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const admin = createAdminSupabaseClient();
 
-  const [{ data: profile }, { data: invoices }, { data: loginEvents }, { data: subscription }, authUser] =
-    await Promise.all([
-      admin.from("profiles").select("*").eq("id", id).single(),
-      admin.from("invoices").select("id, invoice_number, client_snapshot, currency, total, status, invoice_date").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
-      admin.from("login_events").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
-      admin.from("subscriptions").select("*").eq("user_id", id).single(),
-      admin.auth.admin.getUserById(id),
-    ]);
+  const [{ data: profile }, { data: subscription }, authUser] = await Promise.all([
+    admin.from("profiles").select("*").eq("id", id).single(),
+    admin.from("subscriptions").select("*").eq("user_id", id).single(),
+    admin.auth.admin.getUserById(id),
+  ]);
 
   if (!profile) notFound();
 
@@ -183,43 +174,6 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             Subscription: {(subscription as Subscription).status}
             {(subscription as Subscription).billing_cycle ? ` · ${(subscription as Subscription).billing_cycle}` : ""}
           </p>
-        )}
-      </Section>
-
-      {/* Invoices */}
-      <Section title={`Invoices (${(invoices ?? []).length})`}>
-        {(invoices ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No invoices yet.</p>
-        ) : (
-          <div className="space-y-2">
-            {(invoices as Invoice[]).map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border/50 last:border-0">
-                <div className="min-w-0">
-                  <p className="font-semibold truncate">#{inv.invoice_number} — {inv.client_snapshot?.name ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground">{fmtDate(inv.invoice_date)}</p>
-                </div>
-                <span className="font-bold tabular-nums flex-shrink-0">{fmtMoney(Number(inv.total), inv.currency)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
-
-      {/* Login history */}
-      <Section title="Login History">
-        {(loginEvents ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No login events recorded yet — tracking started when this feature shipped, so accounts that haven&apos;t logged in since won&apos;t show history yet.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {(loginEvents as LoginEvent[]).map((ev) => (
-              <div key={ev.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border/50 last:border-0">
-                <p className="text-muted-foreground">{new Date(ev.created_at).toLocaleString("en-GB")}</p>
-                <p className="text-xs text-muted-foreground truncate max-w-[50%]">{ev.ip_address ?? "—"}</p>
-              </div>
-            ))}
-          </div>
         )}
       </Section>
     </div>

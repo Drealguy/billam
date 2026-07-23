@@ -112,11 +112,3 @@ export const CURRENCY_SYMBOLS: Record<Currency, string> = {
 };
 
 export const VAT_RATE = 0.075; // 7.5%
-
-export interface LoginEvent {
-  id: string;
-  user_id: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  created_at: string;
-}

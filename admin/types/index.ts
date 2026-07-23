@@ -25,33 +25,6 @@ export interface Profile {
   created_at: string;
 }
 
-export interface Invoice {
-  id: string;
-  user_id: string;
-  invoice_number: string;
-  client_snapshot: { name?: string };
-  currency: string;
-  total: number;
-  status: "unpaid" | "part_payment" | "paid";
-  invoice_date: string;
-  created_at: string;
-}
-
-export interface LoginEvent {
-  id: string;
-  user_id: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  created_at: string;
-}
-
-export const CURRENCY_SYMBOLS: Record<string, string> = {
-  NGN: "₦",
-  USD: "$",
-  GBP: "£",
-  EUR: "€",
-};
-
 export interface Subscription {
   id: string;
   user_id: string;
