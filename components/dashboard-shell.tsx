@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { Sidebar, SidebarToggle } from "@/components/sidebar";
 import { SessionWatcher } from "@/components/session-watcher";
-import { NavInstallButton } from "@/components/nav-install-button";
 import { NotificationBell } from "@/components/notification-bell";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import type { Notification } from "@/types";
+import type { Notification, PlanTier } from "@/types";
 
 interface DashboardShellProps {
   businessName: string;
   fullName: string;
   logoUrl: string;
+  plan: PlanTier;
   notifications: Notification[];
   children: React.ReactNode;
 }
@@ -21,6 +21,7 @@ export function DashboardShell({
   businessName,
   fullName,
   logoUrl,
+  plan,
   notifications,
   children,
 }: DashboardShellProps) {
@@ -33,6 +34,7 @@ export function DashboardShell({
         businessName={businessName}
         fullName={fullName}
         logoUrl={logoUrl}
+        plan={plan}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -50,7 +52,6 @@ export function DashboardShell({
 
           {/* Top-right actions */}
           <div className="flex items-center gap-2">
-            <NavInstallButton />
             <NotificationBell notifications={notifications} />
             <Link
               href="/invoices/new"

@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard-shell";
-import type { Notification } from "@/types";
+import type { Notification, PlanTier } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export default async function DashboardLayout({
   const [{ data: profile }, { data: notifications }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("business_name, full_name, logo_url")
+      .select("business_name, full_name, logo_url, plan")
       .eq("id", user.id)
       .single(),
     supabase
@@ -36,6 +36,7 @@ export default async function DashboardLayout({
       businessName={profile?.business_name ?? ""}
       fullName={profile?.full_name ?? user.email ?? ""}
       logoUrl={profile?.logo_url ?? ""}
+      plan={(profile?.plan as PlanTier) ?? "free"}
       notifications={(notifications ?? []) as Notification[]}
     >
       {children}

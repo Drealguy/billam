@@ -1,10 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import { CURRENCY_SYMBOLS, type Invoice, type Profile, type Subscription } from "@/types";
+import { CURRENCY_SYMBOLS, type Invoice, type Profile } from "@/types";
 import Link from "next/link";
 import { FileText, ArrowRight, CheckCircle2, Circle, TrendingUp, Wallet, Clock, Send } from "lucide-react";
-import { SubscriptionCard } from "@/components/subscription-card";
-import { getPlanLimits, getClientCount } from "@/lib/entitlements";
 
 export const dynamic = "force-dynamic";
 
@@ -29,18 +27,13 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: allInvoices }, { data: subscription }, clientCount] = await Promise.all([
+  const [{ data: profile }, { data: allInvoices }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("invoices").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("subscriptions").select("*").eq("user_id", user.id).single(),
-    getClientCount(supabase, user.id),
   ]);
 
   const p = profile as Profile | null;
   const invoices = (allInvoices ?? []) as Invoice[];
-  const sub = subscription as Subscription | null;
-  const plan = p?.plan ?? "free";
-  const limits = getPlanLimits(plan);
   const firstName = p?.full_name?.split(" ")[0] ?? "there";
   const currency = p?.default_currency ?? "NGN";
 
@@ -69,10 +62,10 @@ export default async function DashboardPage() {
   const onboardingComplete = doneChecks === totalChecks;
 
   const STEPS = [
-    { key: "profile", label: "Complete your business profile", href: "/settings", desc: "Add your business name, tagline & phone" },
-    { key: "logo",    label: "Upload your logo",              href: "/settings", desc: "Make every invoice look like your brand" },
-    { key: "colours", label: "Set your brand colours",        href: "/settings", desc: "Pick your header colour and accent" },
-    { key: "bank",    label: "Add bank details",              href: "/settings", desc: "So clients know where to send money" },
+    { key: "profile", label: "Complete your business profile", href: "/account/settings", desc: "Add your business name, tagline & phone" },
+    { key: "logo",    label: "Upload your logo",              href: "/account/settings", desc: "Make every invoice look like your brand" },
+    { key: "colours", label: "Set your brand colours",        href: "/account/settings", desc: "Pick your header colour and accent" },
+    { key: "bank",    label: "Add bank details",              href: "/account/settings", desc: "So clients know where to send money" },
     { key: "invoice", label: "Create your first invoice",     href: "/invoices/new", desc: "You're all set — start billing" },
   ] as const;
 
@@ -98,18 +91,6 @@ export default async function DashboardPage() {
           <Send size={14} /> New Invoice
         </Link>
       </div>
-
-      {/* Subscription */}
-      <SubscriptionCard
-        plan={plan}
-        billingCycle={sub?.billing_cycle ?? null}
-        currentPeriodEnd={sub?.current_period_end ?? null}
-        cancelAtPeriodEnd={sub?.cancel_at_period_end ?? false}
-        invoicesThisMonth={thisMonth.length}
-        maxInvoicesPerMonth={limits.maxInvoicesPerMonth}
-        clientCount={clientCount}
-        maxClients={limits.maxClients}
-      />
 
       {/* Onboarding checklist */}
       {!onboardingComplete && (

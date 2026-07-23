@@ -7,25 +7,27 @@ import {
   LayoutDashboard,
   FileText,
   Users,
-  Settings,
+  UserCircle,
   LogOut,
   X,
   Menu,
   ScrollText,
 } from "lucide-react";
+import type { PlanTier } from "@/types";
 
 const NAV = [
-  { href: "/dashboard",  label: "Overview",  icon: LayoutDashboard },
-  { href: "/invoices",   label: "Invoices",   icon: FileText        },
-  { href: "/clients",    label: "Clients",    icon: Users           },
-  { href: "/contracts",  label: "Contracts",  icon: ScrollText      },
-  { href: "/settings",   label: "Settings",   icon: Settings        },
+  { href: "/dashboard",        label: "Overview",  icon: LayoutDashboard },
+  { href: "/invoices",         label: "Invoices",   icon: FileText        },
+  { href: "/clients",          label: "Clients",    icon: Users           },
+  { href: "/contracts",        label: "Contracts",  icon: ScrollText      },
+  { href: "/account/settings", label: "Account",    icon: UserCircle      },
 ];
 
 interface SidebarProps {
   businessName: string;
   fullName: string;
   logoUrl: string;
+  plan: PlanTier;
   open: boolean;
   onClose: () => void;
 }
@@ -45,7 +47,7 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-export function Sidebar({ businessName, fullName, logoUrl, open, onClose }: SidebarProps) {
+export function Sidebar({ businessName, fullName, logoUrl, plan, open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -103,9 +105,16 @@ export function Sidebar({ businessName, fullName, logoUrl, open, onClose }: Side
               <Initials name={businessName || fullName || "B A"} />
             )}
             <div className="min-w-0">
-              <p className="text-sm font-bold truncate leading-tight">
-                {businessName || fullName}
-              </p>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <p className="text-sm font-bold truncate leading-tight">
+                  {businessName || fullName}
+                </p>
+                {plan === "pro" && (
+                  <span className="flex-shrink-0 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                    Pro
+                  </span>
+                )}
+              </div>
               {businessName && (
                 <p className="text-xs text-muted-foreground truncate mt-0.5">
                   {fullName}
@@ -125,6 +134,8 @@ export function Sidebar({ businessName, fullName, logoUrl, open, onClose }: Side
             const active =
               href === "/dashboard"
                 ? pathname === "/dashboard"
+                : href === "/account/settings"
+                ? pathname.startsWith("/account")
                 : pathname.startsWith(href);
 
             return (
