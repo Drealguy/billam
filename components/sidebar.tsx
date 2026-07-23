@@ -106,7 +106,7 @@ export function Sidebar({ businessName, fullName, logoUrl, plan, open, onClose }
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className="text-sm font-bold truncate leading-tight">
+                <p className="flex-1 min-w-0 text-sm font-bold truncate leading-tight">
                   {businessName || fullName}
                 </p>
                 {plan === "pro" && (
