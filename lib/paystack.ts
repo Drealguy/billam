@@ -18,6 +18,15 @@ export function getPlanCode(cycle: BillingCycle): string {
   return code;
 }
 
+/** Paystack's /transaction/initialize requires "amount" (in kobo) even
+ * when a plan code is supplied — it must match the plan's price or the
+ * charge is rejected with "Invalid amount sent". Mirrors the pricing
+ * shown in components/upgrade-modal.tsx and app/page.tsx. */
+const CYCLE_AMOUNT_KOBO: Record<BillingCycle, number> = {
+  monthly: 250_000, // ₦2,500
+  yearly: 2_500_000, // ₦25,000
+};
+
 async function paystackFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${PAYSTACK_BASE_URL}${path}`, {
     ...init,
@@ -51,6 +60,7 @@ export async function initializeSubscriptionTransaction(params: {
     method: "POST",
     body: JSON.stringify({
       email: params.email,
+      amount: CYCLE_AMOUNT_KOBO[params.cycle],
       plan: getPlanCode(params.cycle),
       callback_url: params.callbackUrl,
       metadata: params.metadata,
