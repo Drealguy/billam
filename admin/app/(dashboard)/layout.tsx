@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerSupabaseClient, getAuthUser } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { getAdminContext } from "@/lib/rbac";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -10,13 +10,10 @@ export default async function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) redirect("/login");
 
+  const supabase = await createServerSupabaseClient();
   const ctx = await getAdminContext(supabase, user.id);
 
   // proxy.ts only confirms a Supabase session exists — this is where

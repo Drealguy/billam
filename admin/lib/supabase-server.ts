@@ -29,3 +29,18 @@ export const createServerSupabaseClient = cache(async function createServerSupab
     }
   );
 });
+
+/**
+ * auth.getUser() makes a real network call to Supabase's Auth server to
+ * revalidate the token (unlike getSession(), which just reads the local
+ * cookie) — necessary for security, but expensive to repeat. The layout
+ * and every page were each calling it independently, doubling that
+ * round trip on every navigation. Memoized so it runs once per request.
+ */
+export const getAuthUser = cache(async function getAuthUser() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

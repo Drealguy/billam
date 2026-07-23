@@ -38,28 +38,29 @@ export const getAdminContext = cache(async function getAdminContext(
     return EMPTY_ADMIN_CONTEXT;
   }
 
+  // One nested query instead of two sequential round trips: roles and
+  // their permissions come back together via PostgREST's embedding.
   const { data: userRoles } = await supabase
     .from("admin_user_roles")
-    .select("role_id, admin_roles(name)")
+    .select("admin_roles(name, admin_role_permissions(admin_permissions(key)))")
     .eq("user_id", userId);
 
-  const roleIds = (userRoles ?? []).map((r) => r.role_id);
-  const roles = (userRoles ?? [])
-    .map((r) => (r.admin_roles as unknown as { name: string } | null)?.name)
-    .filter((name): name is string => Boolean(name));
+  type RoleRow = {
+    admin_roles: {
+      name: string;
+      admin_role_permissions: { admin_permissions: { key: string } | null }[];
+    } | null;
+  };
 
-  let permissions = new Set<string>();
-  if (roleIds.length > 0) {
-    const { data: rolePermissions } = await supabase
-      .from("admin_role_permissions")
-      .select("admin_permissions(key)")
-      .in("role_id", roleIds);
-
-    permissions = new Set(
-      (rolePermissions ?? [])
-        .map((rp) => (rp.admin_permissions as unknown as { key: string } | null)?.key)
-        .filter((key): key is string => Boolean(key))
-    );
+  const roles: string[] = [];
+  const permissions = new Set<string>();
+  for (const row of (userRoles ?? []) as unknown as RoleRow[]) {
+    const role = row.admin_roles;
+    if (!role) continue;
+    roles.push(role.name);
+    for (const rp of role.admin_role_permissions ?? []) {
+      if (rp.admin_permissions?.key) permissions.add(rp.admin_permissions.key);
+    }
   }
 
   return {
