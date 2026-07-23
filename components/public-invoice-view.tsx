@@ -32,9 +32,45 @@ export function PublicInvoiceView({ invoice, profile }: Props) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (searchParams.get("print") === "1") {
-      setTimeout(() => window.print(), 900);
+    if (searchParams.get("print") !== "1") return;
+
+    let cancelled = false;
+
+    const triggerPrint = () => {
+      if (!cancelled) window.print();
+    };
+
+    const images = Array.from(document.images);
+    const pending = images.filter((img) => !img.complete);
+
+    if (pending.length === 0) {
+      // Still let layout/fonts settle a beat before printing.
+      requestAnimationFrame(() => requestAnimationFrame(triggerPrint));
+    } else {
+      let remaining = pending.length;
+      const done = () => {
+        remaining -= 1;
+        if (remaining <= 0) requestAnimationFrame(() => requestAnimationFrame(triggerPrint));
+      };
+      pending.forEach((img) => {
+        img.addEventListener("load", done, { once: true });
+        img.addEventListener("error", done, { once: true });
+      });
+      // Safety net in case an image never fires load/error.
+      const fallback = setTimeout(triggerPrint, 3000);
+      return () => {
+        cancelled = true;
+        clearTimeout(fallback);
+        pending.forEach((img) => {
+          img.removeEventListener("load", done);
+          img.removeEventListener("error", done);
+        });
+      };
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams]);
 
   const sym = CURRENCY_SYMBOLS[invoice.currency as keyof typeof CURRENCY_SYMBOLS] ?? invoice.currency;

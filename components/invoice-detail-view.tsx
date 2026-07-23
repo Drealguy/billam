@@ -79,7 +79,13 @@ export function InvoiceDetailView({ invoice, profile }: Props) {
   };
 
   const handleDownloadPDF = () => {
-    window.open(`/i/${invoice.id}?print=1`, "_blank");
+    const url = `/i/${invoice.id}?print=1`;
+    const win = window.open(url, "_blank");
+    // window.open can silently return null (popup blocked, or running as an
+    // installed standalone PWA on iOS) — fall back to same-tab navigation.
+    if (!win) {
+      window.location.href = url;
+    }
   };
 
   const handleDelete = async () => {
