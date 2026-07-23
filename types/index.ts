@@ -1,6 +1,7 @@
 export type Currency = "NGN" | "USD" | "GBP" | "EUR";
 export type InvoiceStatus = "unpaid" | "part_payment" | "paid";
 export type InvoiceTemplate = "classic" | "clean" | "modern" | "studio";
+export type AccountStatus = "active" | "suspended" | "banned" | "deleted";
 
 export interface Profile {
   id: string;
@@ -16,6 +17,9 @@ export interface Profile {
   account_name: string;
   default_currency: Currency;
   plan: "free" | "pro";
+  status: AccountStatus;
+  status_reason: string | null;
+  email: string | null;
   created_at: string;
 }
 
@@ -108,3 +112,11 @@ export const CURRENCY_SYMBOLS: Record<Currency, string> = {
 };
 
 export const VAT_RATE = 0.075; // 7.5%
+
+export interface LoginEvent {
+  id: string;
+  user_id: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+}

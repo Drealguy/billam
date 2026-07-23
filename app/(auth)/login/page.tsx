@@ -11,7 +11,7 @@ import { ArrowRight, Eye, EyeOff } from "lucide-react";
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
+    < div className="space-y-1.5">
       <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </label>
@@ -77,6 +77,17 @@ function LoginForm() {
 
     if (error) {
       setServerError(error.message);
+      return;
+    }
+
+    const logRes = await fetch("/api/auth/log-login", { method: "POST" });
+    if (!logRes.ok) {
+      const body = await logRes.json().catch(() => ({}));
+      await supabase.auth.signOut();
+      const params = new URLSearchParams();
+      if (body.status) params.set("status", body.status);
+      if (body.reason) params.set("reason", body.reason);
+      router.push(`/suspended?${params.toString()}`);
       return;
     }
 
