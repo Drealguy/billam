@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar, SidebarToggle } from "@/components/sidebar";
 import { SessionWatcher } from "@/components/session-watcher";
 import { NotificationBell } from "@/components/notification-bell";
+import { SupportChatWidget } from "@/components/support-chat-widget";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import type { Notification, PlanTier } from "@/types";
@@ -68,6 +69,8 @@ export function DashboardShell({
           {children}
         </main>
       </div>
+
+      <SupportChatWidget />
     </div>
   );
 }
